@@ -1,15 +1,26 @@
 package com.poema.tetris
 
+
 object GameBoard {
-    var arr = Array(20) { Array<Int>(12) {0} }
+    var arr = Array(20) { Array<Int>(12) { 0 } }
 
-/*    fun emptyArray(){
-       arr.forEachIndexed {y, row ->
-           row.forEachIndexed{
-                   x, value ->
-               arr[y][x] = 0
-           }
-       }
+    fun printArray() {
 
-    }*/
+        for (array in arr) {
+            println("!!! ${array.contentToString()}")
+        }
+        println("!!!________________________________")
+    }
+
+    fun printBlock(block:Array<Array<Int>>) {
+
+        for (array in block) {
+            println("!!! ${array.contentToString()}")
+        }
+        println("!!!________________________________")
+    }
+
+
+
+
 }
