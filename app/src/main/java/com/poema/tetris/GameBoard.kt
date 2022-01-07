@@ -19,6 +19,14 @@ object GameBoard {
         }
         println("!!!________________________________")
     }
+    fun rinseGameBoard(){
+        for(a in arr){
+            for(index in 0..a.lastIndex){
+                a[index]=0
+            }
+        }
+
+    }
 
 
 
