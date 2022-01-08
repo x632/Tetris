@@ -12,9 +12,8 @@ class DynamicView(context: Context?, w: Int, h: Int) :
 
     private var bitmap: Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
     private var frameDrawer: Canvas = Canvas(bitmap)
-    private var bounds: Rect = Rect(0, 0, w, h)
+    private var bounds: Rect = Rect(60, 20, w, h-200)
     private var paint: Paint = Paint()
-    //extraCanvas.drawColor(backgroundColor)
 
     override fun onDraw(canvas: Canvas) {
         val h = height - (height * (PERCENTAGE_OF_BOARD_HEIGHT))
@@ -27,7 +26,7 @@ class DynamicView(context: Context?, w: Int, h: Int) :
             for (x in 0..11) {
                 if (GameBoard.arr[y][x] != 0) {
                     paint.color = when (GameBoard.arr[y][x]) {
-                        1 -> BLACK
+                        1 -> LTGRAY
                         2 -> RED
                         3 -> GREEN
                         4 -> BLUE
@@ -62,4 +61,6 @@ class DynamicView(context: Context?, w: Int, h: Int) :
         }
         canvas.drawBitmap(bitmap, null, bounds, null)
     }
+
+
 }

@@ -1,20 +1,27 @@
-package com.poema.tetris
+package com.poema.tetris.ui.fragments
 
-
-import androidx.appcompat.app.AppCompatActivity
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.view.*
+import androidx.fragment.app.Fragment
+import com.poema.tetris.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import android.widget.Toast
+
 import android.view.MotionEvent
-import kotlinx.coroutines.*
-import kotlinx.coroutines.Dispatchers.Main
+
+import android.view.View.OnTouchListener
 
 
-const val PERCENTAGE_OF_BOARD_HEIGHT = 0.2
-const val PERCENTAGE_OF_BOARD_WIDTH = 0.05
-const val BLOCK_CODES = "TJLOSZI"
-const val INTERVAL = 300L
 
-class MainActivity : AppCompatActivity() {
+
+
+class GameFragment : Fragment() {
+
 
     private lateinit var gameView: DynamicView
     private var currentBlock: Array<Array<Int>> = arrayOf<Array<Int>>()
@@ -22,20 +29,40 @@ class MainActivity : AppCompatActivity() {
     private var newRound = true
     private var offset = 0
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
 
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
         val displayMetrics: DisplayMetrics = this.resources.displayMetrics
         val w =
             displayMetrics.widthPixels - (displayMetrics.widthPixels * (PERCENTAGE_OF_BOARD_WIDTH))
         val h =
             displayMetrics.heightPixels - (displayMetrics.heightPixels * (PERCENTAGE_OF_BOARD_HEIGHT))
-        gameView = DynamicView(this, w.toInt(), h.toInt())
-        setContentView(R.layout.activity_main)
-        //pickBlock()
+        gameView = DynamicView(activity, w.toInt(), h.toInt())
 
+        gameView.setOnTouchListener { _, event ->
+
+            val touchX = event.x
+            val touchY = event.y
+
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                touch(touchX, touchY)
+            }
+            true
+        }
+        return gameView
     }
-/*
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        pickBlock()
+    }
+
     private fun pickBlock() {
 
         if (newRound) {
@@ -75,7 +102,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun pause() {
-        CoroutineScope(Main).launch {
+        CoroutineScope(Dispatchers.Main).launch {
             delay(INTERVAL)
             removeBlock(position, currentBlock)
             pickBlock()
@@ -163,9 +190,9 @@ class MainActivity : AppCompatActivity() {
                     if ( position.x + x < 1 || position.x + x > 10){
                         return true
                     }
-                  *//*  if (position.x + x < 1 || position.x + x > 10) {
-                        return true
-                    }*//*
+                    /*  if (position.x + x < 1 || position.x + x > 10) {
+                          return true
+                      }*/
                 }
             }
         }
@@ -231,39 +258,44 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-*//*    override fun onTouchEvent(event: MotionEvent): Boolean {
-        val touchX = event.x
-        val touchY = event.y
+/*   override fun onTouchEvent(event: MotionEvent): Boolean {
+       val touchX = event.x
+       val touchY = event.y
 
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> touch(touchX, touchY)
-            // MotionEvent.ACTION_MOVE -> touchMove()
-            //MotionEvent.ACTION_UP -> touchUp()
-        }
-        return true
-    }
+       when (event.action) {
+           MotionEvent.ACTION_DOWN -> touch(touchX, touchY)
+           // MotionEvent.ACTION_MOVE -> touchMove()
+           //MotionEvent.ACTION_UP -> touchUp()
+       }
+       return true
+   }
+*/
+   private fun touch(touchX: Float, touchY: Float) {
 
-    private fun touch(touchX: Float, touchY: Float) {
 
-        if (touchX < 524 && touchY > 1235) {
-            if (position.x > 5 || !checkCollisionToTheSides()) {
-                removeBlock(position, currentBlock)
-                position.x--
-            }
-        }
+       if (touchX < 524 && touchY > 1235) {
+           if (position.x > 5 || !checkCollisionToTheSides()) {
+               removeBlock(position, currentBlock)
+               position.x--
 
-        if (touchX > 524 && touchY > 1235) {
-            if (position.x < 4 || !checkCollisionToTheSides()) {
-                removeBlock(position, currentBlock)
-                position.x++
-            }
 
-        }
-        if (touchY < 1235) {
-            removeBlock(position, currentBlock)
-            rotateBlock()
-        }
+           }
+       }
 
-    }*/
+       if (touchX > 524 && touchY > 1235) {
+           if (position.x < 4 || !checkCollisionToTheSides()) {
+               removeBlock(position, currentBlock)
+               position.x++
+
+
+           }
+
+       }
+       if (touchY < 1235) {
+           removeBlock(position, currentBlock)
+           rotateBlock()
+       }
+
+   }
+
 }
-
