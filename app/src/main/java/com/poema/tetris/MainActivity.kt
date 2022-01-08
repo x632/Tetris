@@ -1,7 +1,6 @@
 package com.poema.tetris
 
 
-
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -36,7 +35,6 @@ class MainActivity : AppCompatActivity() {
         pickBlock()
     }
 
-
     private fun pickBlock() {
 
         if (newRound) {
@@ -46,11 +44,10 @@ class MainActivity : AppCompatActivity() {
         newRound = false
         checkCollisionBelow()
         pause()
-
     }
 
     fun setOffsets() {
-        //GameBoard.printBlock(currentBlock)
+        GameBoard.printBlock(currentBlock)
         var sum = 0
         var rowEmpty = 0
         var yRow = 0
@@ -61,25 +58,24 @@ class MainActivity : AppCompatActivity() {
 
             }
             if (sum == 0) {
-               // println("!!! row that's empty: $indexY")
+                // println("!!! row that's empty: $indexY")
                 rowEmpty++
                 sum = 0
-               // println("!!! Rows empty to the left in this block: $rowEmpty")
+                // println("!!! Rows empty to the left in this block: $rowEmpty")
             }
-            sum=0
+            sum = 0
         }
     }
 
     private fun pause() {
         CoroutineScope(Main).launch {
             delay(INTERVAL)
-            removeBlock(position,currentBlock)
+            removeBlock(position, currentBlock)
             pickBlock()
         }
-
     }
 
-    private fun insertBlock(block:Array<Array<Int>>,position:Position) {
+    private fun insertBlock(block: Array<Array<Int>>, position: Position) {
         block.forEachIndexed { rowIndex, _ ->
             block[rowIndex].forEachIndexed { columnIndex, value ->
                 if (value != 0) {
@@ -88,7 +84,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         gameView.invalidate()
-
     }
 
     private fun removeBlock(position: Position, block: Array<Array<Int>>) {
@@ -106,7 +101,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun rotateBlock() {
         val n = currentBlock.size
-        val turnedBlock = Array(n) { Array<Int>(n){0} }
+        val turnedBlock = Array(n) { Array<Int>(n) { 0 } }
         for (i in 0 until n) {
             for (j in 0 until n) {
                 turnedBlock[i][j] = currentBlock[n - 1 - j][i]
@@ -121,24 +116,46 @@ class MainActivity : AppCompatActivity() {
         val yH = currentBlock.lastIndex
 
         for (x in 0..xW) {
+            println("!!! xW = $xW")
             for (y in currentBlock.lastIndex downTo 0) {
-
-                if (position.y + y - offset == 19) {
+                //kolla om den är på nederrsta raden
+                if (currentBlock[y][x] != 0 && position.y + y > 18) {
                     newRound = true
-                    insertBlock(currentBlock,position)
+                    insertBlock(currentBlock, position)
                     position.y = 0
                     return
                 }
-                if (currentBlock[y][x] != 0 && GameBoard.arr[y + (position.y + 1)][x + position.x] != 0) {
-                    newRound = true
-                    insertBlock(currentBlock,position)
-                    position.y = 0
-                    return
+                //kolla om positionen under har innehåll(andra byggstenar)
+                if (currentBlock[y][x] != 0) {
+                    if(position.x+x >11) {position.x--}
+                    if(position.x+x <0) {position.x++}
+                    if (GameBoard.arr[y + (position.y + 1)][position.x + x] != 0) {
+                        newRound = true
+                        insertBlock(currentBlock, position)
+                        position.y = 0
+                        return
+                    }
                 }
             }
         }
-        insertBlock(currentBlock,position)
+        insertBlock(currentBlock, position)
         position.y++
+    }
+
+    fun checkCollisionToTheSides(): Boolean {
+        val xW = currentBlock[0].lastIndex
+        val yH = currentBlock.lastIndex
+
+        for (x in 0..xW) {
+            for (y in 0..yH) {
+                if (currentBlock[y][x] != 0) {
+                    if (position.x + x < 1 || position.x + x > 10) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 
 
@@ -154,7 +171,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             'L' -> {
-                offset = 0
                 return arrayOf(
                     arrayOf(0, 2, 0),
                     arrayOf(0, 2, 0),
@@ -162,7 +178,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             'J' -> {
-                offset = 0
                 return arrayOf(
                     arrayOf(0, 3, 0),
                     arrayOf(0, 3, 0),
@@ -170,14 +185,12 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             'O' -> {
-                offset = 0
                 return arrayOf(
                     arrayOf(4, 4),
                     arrayOf(4, 4)
                 )
             }
             'Z' -> {
-                offset = 1
                 return arrayOf(
                     arrayOf(5, 5, 0),
                     arrayOf(0, 5, 5),
@@ -185,7 +198,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             'S' -> {
-                offset = 1
                 return arrayOf(
                     arrayOf(0, 6, 6),
                     arrayOf(6, 6, 0),
@@ -193,7 +205,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             'T' -> {
-                offset = 1
                 return arrayOf(
                     arrayOf(0, 7, 0),
                     arrayOf(7, 7, 7),
@@ -220,18 +231,30 @@ class MainActivity : AppCompatActivity() {
 
     fun touch(touchX: Float, touchY: Float) {
 
-        if (touchX < 524 && position.x >= 1 && touchY > 1235) {
-            removeBlock(position,currentBlock)
-            position.x--
+
+        if (touchX < 524 && touchY > 1235) {
+            if (position.x > 5 || !checkCollisionToTheSides()) {
+                removeBlock(position, currentBlock)
+                    position.x--
+
+
+            }
         }
-        else if (touchX > 524 && position.x <= 8 && touchY > 1235) {
-            removeBlock(position,currentBlock)
-            position.x++
+
+        if (touchX > 524 && touchY > 1235) {
+            if (position.x < 4 || !checkCollisionToTheSides()) {
+                removeBlock(position, currentBlock)
+                    position.x++
+
+
+            }
+
         }
-        else if (touchY < 1235){
-            removeBlock(position,currentBlock)
+        if (touchY < 1235) {
+            removeBlock(position, currentBlock)
             rotateBlock()
         }
+
     }
 }
 

@@ -14,7 +14,7 @@ class DynamicView(context: Context?, w: Int, h: Int) :
     private var frameDrawer: Canvas = Canvas(bitmap)
     private var bounds: Rect = Rect(0, 0, w, h)
     private var paint: Paint = Paint()
-
+    //extraCanvas.drawColor(backgroundColor)
 
     override fun onDraw(canvas: Canvas) {
         val h = height - (height * (PERCENTAGE_OF_BOARD_HEIGHT))
@@ -47,8 +47,8 @@ class DynamicView(context: Context?, w: Int, h: Int) :
                     )
                 } else {
                     paint.color = argb(
-                        255, 255,
-                        255, 255
+                        255, 35,
+                        37, 30
                     )
                     frameDrawer.drawRect(
                         x * blockWidth,
