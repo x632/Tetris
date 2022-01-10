@@ -7,53 +7,97 @@
     android:background="#3C5421"
     tools:context=".MainActivity">
 
+    <TextView
+        android:id="@+id/score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SCORE"
+        android:textColor="#FFFFFF"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainerView"
         android:name="com.poema.tetris.ui.fragments.GameFragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:layout_marginBottom="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/score"
+        tools:layout="@layout/fragment_game" />
 
-    <Button
-        android:id="@+id/goLeft"
-        android:layout_width="180dp"
-        android:layout_height="100dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginBottom="10dp"
-        android:text="GO LEFT"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraint"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        tools:layout_editor_absoluteX="116dp">
 
-    <Button
-        android:id="@+id/goRight"
-        android:layout_width="180dp"
-        android:layout_height="100dp"
-        android:layout_marginEnd="10dp"
-        android:text="GO RIGHT"
-        app:layout_constraintBottom_toBottomOf="@+id/goLeft"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <Button
+            android:id="@+id/goDown"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="DOWN"
+            app:layout_constraintEnd_toEndOf="@id/constraint"
+            app:layout_constraintStart_toStartOf="@id/constraint"
+            app:layout_constraintTop_toTopOf="@id/constraint" />
 
-    <Button
-        android:id="@+id/rotateLeft"
-        android:layout_width="180dp"
-        android:layout_height="100dp"
-        android:layout_marginStart="10dp"
-        android:text="ROTATE LEFT"
-        app:layout_constraintBottom_toBottomOf="@+id/rotateRight"
-        app:layout_constraintStart_toStartOf="parent" />
+        <Button
+            android:id="@+id/rotateLeft"
+            android:layout_width="180dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="10dp"
+            android:drawableLeft="@drawable/rotateleft"
+            android:text="ROTATE LEFT"
+            app:layout_constraintBottom_toBottomOf="@+id/rotateRight"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/goDown"
+             />
 
-    <Button
-        android:id="@+id/rotateRight"
-        android:layout_width="180dp"
-        android:layout_height="100dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
-        android:text="ROTATE RIGHT"
-        app:layout_constraintBottom_toTopOf="@+id/goRight"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <Button
+            android:id="@+id/rotateRight"
+            android:layout_width="180dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="10dp"
+            android:drawableLeft="@drawable/rotateright"
+            android:text="ROTATE RIGHT"
+            app:layout_constraintBottom_toTopOf="@+id/goRight"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/goDown" />
+
+        <Button
+            android:id="@+id/goLeft"
+            android:layout_width="180dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="GO LEFT"
+            app:layout_constraintBottom_toBottomOf="@+id/constraint"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rotateRight"
+            />
+
+        <Button
+            android:id="@+id/goRight"
+            android:layout_width="180dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="GO RIGHT"
+            app:layout_constraintTop_toBottomOf="@+id/rotateRight"
+            app:layout_constraintBottom_toBottomOf="@+id/constraint"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

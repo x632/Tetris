@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme.Tetris" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimary">#1B2505</item>
         <item name="colorPrimaryVariant">#101010</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->

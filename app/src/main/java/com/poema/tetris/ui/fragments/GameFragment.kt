@@ -1,13 +1,14 @@
 package com.poema.tetris.ui.fragments
 
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.*
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.poema.tetris.*
-
-
 import kotlinx.coroutines.*
+
 
 class GameFragment : Fragment() {
 
@@ -16,14 +17,15 @@ class GameFragment : Fragment() {
     private var position = Position(5, 0)
     private var newRound = true
     private var job: Job? = null
-
-
+    private var score = 0
+    private lateinit var scoreTV: TextView
+    lateinit var mp: MediaPlayer
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
+        mp = MediaPlayer.create(activity, R.raw.pling)
         val displayMetrics: DisplayMetrics = this.resources.displayMetrics
         val w =
             displayMetrics.widthPixels - (displayMetrics.widthPixels * (PERCENTAGE_OF_BOARD_WIDTH))
@@ -31,20 +33,30 @@ class GameFragment : Fragment() {
             displayMetrics.heightPixels - (displayMetrics.heightPixels * (PERCENTAGE_OF_BOARD_HEIGHT))
         gameView = DynamicView(activity, w.toInt(), h.toInt())
 
+        scoreTV = requireActivity().findViewById(R.id.score)
         val goRight: View = requireActivity().findViewById(R.id.goRight)
         val goLeft: View = requireActivity().findViewById(R.id.goLeft)
         val rotateLeft: View = requireActivity().findViewById(R.id.rotateLeft)
         val rotateRight: View = requireActivity().findViewById(R.id.rotateRight)
+        val goDown: View = requireActivity().findViewById(R.id.goDown)
+
+        goDown.setOnClickListener{
+            movePlayerDown()
+        }
 
         goLeft.setOnClickListener {
             movePlayerToTheSides(-1)
         }
-        goRight.setOnClickListener{
+        goRight.setOnClickListener {
             movePlayerToTheSides(1)
         }
         rotateRight.setOnClickListener {
             removeBlock()
-            rotateBlock()
+            rotateBlock(-1)
+        }
+        rotateLeft.setOnClickListener {
+            removeBlock()
+            rotateBlock(1)
         }
 
         pickBlock()
@@ -52,7 +64,10 @@ class GameFragment : Fragment() {
     }
 
 
+
+
     private fun pickBlock() {
+
         if (newRound) {
             checkForAndRemoveFullRows()
             val code = BLOCK_CODES.random()
@@ -76,11 +91,12 @@ class GameFragment : Fragment() {
 
             pickBlock()
         } else {
-                insertBlock()
+            insertBlock()
         }
     }
 
     private fun checkForAndRemoveFullRows() {
+        var amountOfRows = 0
         outer@ while (true) {
             for (y in GameBoard.arr.lastIndex downTo 0) {
                 var sum = 0
@@ -88,6 +104,10 @@ class GameFragment : Fragment() {
                     if (value != 0) sum++
                 }
                 if (sum == 12) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        mp.start()
+                    }
+                    amountOfRows++
                     val new2dArray = Array(20) { Array<Int>(12) { 0 } }
                     for (ind in 1..y) {
                         new2dArray[ind] = GameBoard.arr[ind - 1]
@@ -102,6 +122,11 @@ class GameFragment : Fragment() {
                 }
             }
             break
+        }
+        if (amountOfRows != 0) {
+            score += (amountOfRows * 10)*(2*amountOfRows)
+            val text = "SCORE: ${score}"
+            scoreTV.text = text
         }
     }
 
@@ -125,8 +150,8 @@ class GameFragment : Fragment() {
     }
 
     private fun removeBlock() {
-        for( rowIndex in 0..currentBlock.lastIndex){
-            for (columnIndex in 0..currentBlock.lastIndex){
+        for (rowIndex in 0..currentBlock.lastIndex) {
+            for (columnIndex in 0..currentBlock.lastIndex) {
                 if (currentBlock[rowIndex][columnIndex] != 0) {
                     GameBoard.arr[rowIndex + position.y][columnIndex + position.x] = 0
                 }
@@ -135,15 +160,21 @@ class GameFragment : Fragment() {
         gameView.invalidate()
     }
 
-    private fun rotateBlock() {
+    private fun rotateBlock(dir: Int) {
         val n = currentBlock.size
         val turnedBlock = Array(n) { Array<Int>(n) { 0 } }
         for (i in 0 until n) {
             for (j in 0 until n) {
-                turnedBlock[i][j] = currentBlock[n - 1 - j][i]
+                if(dir<0){
+                    turnedBlock[i][j] = currentBlock[n-1-j][i]
+                }else{
+                    turnedBlock[i][j] = currentBlock[j][n-i-1]
+                }
+
             }
         }
         currentBlock = turnedBlock
+        insertBlock()
     }
 
     private fun isCollision(): Boolean {
@@ -155,12 +186,10 @@ class GameFragment : Fragment() {
                             if (GameBoard.arr[y + position.y][x + position.x] != 0) {
                                 return true
                             }
-                        }
-                        else{
+                        } else {
                             return true
                         }
-                    }
-                    else{
+                    } else {
                         return true
                     }
                 }
@@ -168,7 +197,6 @@ class GameFragment : Fragment() {
         }
         return false
     }
-
 
 
     private fun createBlock(type: Char): Array<Array<Int>> {
@@ -235,6 +263,17 @@ class GameFragment : Fragment() {
             insertBlock()
         } else {
             position.x -= dir
+            insertBlock()
+        }
+    }
+
+    private fun movePlayerDown() {
+        removeBlock()
+        position.y++
+        if(!isCollision()){
+            insertBlock()
+        }else{
+            position.y--
             insertBlock()
         }
     }

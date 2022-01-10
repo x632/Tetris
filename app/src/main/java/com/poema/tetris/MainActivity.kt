@@ -9,6 +9,11 @@ import android.widget.Button
 import com.poema.tetris.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
+import android.R
+
+import android.media.MediaPlayer
+
+
 
 
 const val PERCENTAGE_OF_BOARD_HEIGHT = 0.2
@@ -26,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private var offset = 0
 
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -37,7 +43,6 @@ class MainActivity : AppCompatActivity() {
         gameView = DynamicView(this, w.toInt(), h.toInt())
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
     }
 
 }

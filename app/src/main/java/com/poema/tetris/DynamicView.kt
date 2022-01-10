@@ -15,6 +15,7 @@ class DynamicView(context: Context?, w: Int, h: Int) :
     private var bounds: Rect = Rect(60, 20, w, h-200)
     private var paint: Paint = Paint()
 
+
     override fun onDraw(canvas: Canvas) {
         val h = height - (height * (PERCENTAGE_OF_BOARD_HEIGHT))
         val w = width - (width * (PERCENTAGE_OF_BOARD_WIDTH))
