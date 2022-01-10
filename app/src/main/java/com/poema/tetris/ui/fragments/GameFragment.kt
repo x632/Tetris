@@ -6,29 +6,18 @@ import android.util.DisplayMetrics
 import android.view.*
 import androidx.fragment.app.Fragment
 import com.poema.tetris.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import android.widget.Toast
 
 import android.view.MotionEvent
 
-import android.view.View.OnTouchListener
-
-
-
-
+import kotlinx.coroutines.*
 
 class GameFragment : Fragment() {
-
 
     private lateinit var gameView: DynamicView
     private var currentBlock: Array<Array<Int>> = arrayOf<Array<Int>>()
     private var position = Position(5, 0)
     private var newRound = true
-    private var offset = 0
-
+    private var job: Job? = null
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -36,7 +25,7 @@ class GameFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
+
         val displayMetrics: DisplayMetrics = this.resources.displayMetrics
         val w =
             displayMetrics.widthPixels - (displayMetrics.widthPixels * (PERCENTAGE_OF_BOARD_WIDTH))
@@ -54,14 +43,10 @@ class GameFragment : Fragment() {
             }
             true
         }
+        pickBlock()
         return gameView
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        pickBlock()
-    }
 
     private fun pickBlock() {
 
@@ -69,14 +54,30 @@ class GameFragment : Fragment() {
             checkForAndRemoveFullRows()
             val code = BLOCK_CODES.random()
             currentBlock = createBlock(code)
+
         }
         newRound = false
-        checkCollisionBelow()
+        mainFunction()
         pause()
     }
 
-    private fun checkForAndRemoveFullRows() {
+    private fun mainFunction() {
+        removeBlock()
+        position.y++
+        if (isCollision()) {
+            position.y--
+            insertBlock()
+            position.y = 0
+            position.x = 5
+            newRound = true
 
+            pickBlock()
+        } else {
+                insertBlock()
+        }
+    }
+
+    private fun checkForAndRemoveFullRows() {
         outer@ while (true) {
             for (y in GameBoard.arr.lastIndex downTo 0) {
                 var sum = 0
@@ -102,37 +103,35 @@ class GameFragment : Fragment() {
     }
 
     private fun pause() {
-        CoroutineScope(Dispatchers.Main).launch {
+        job?.let { job!!.cancel() }
+        job = CoroutineScope(Dispatchers.Main).launch {
             delay(INTERVAL)
-            removeBlock(position, currentBlock)
             pickBlock()
         }
     }
 
-    private fun insertBlock(block: Array<Array<Int>>, position: Position) {
-        block.forEachIndexed { rowIndex, _ ->
-            block[rowIndex].forEachIndexed { columnIndex, value ->
+    private fun insertBlock() {
+        currentBlock.forEachIndexed { rowIndex, _ ->
+            currentBlock[rowIndex].forEachIndexed { columnIndex, value ->
                 if (value != 0) {
                     GameBoard.arr[rowIndex + position.y][columnIndex + position.x] = value
                 }
             }
         }
         gameView.invalidate()
-        //checkForFullRows()
     }
 
-    private fun removeBlock(position: Position, block: Array<Array<Int>>) {
-        currentBlock.forEachIndexed { rowIndex, _ ->
-            currentBlock[rowIndex].forEachIndexed { columnIndex, value ->
-                if (value != 0) {
-                    if (position.y > 0) {
-                        GameBoard.arr[rowIndex + position.y - 1][columnIndex + position.x] = 0
-                    }
-
+    private fun removeBlock() {
+        for( rowIndex in 0..currentBlock.lastIndex){
+            for (columnIndex in 0..currentBlock.lastIndex){
+                if (currentBlock[rowIndex][columnIndex] != 0) {
+                    GameBoard.arr[rowIndex + position.y][columnIndex + position.x] = 0
                 }
             }
         }
+        gameView.invalidate()
     }
+
 
     private fun rotateBlock() {
         val n = currentBlock.size
@@ -145,54 +144,23 @@ class GameFragment : Fragment() {
         currentBlock = turnedBlock
     }
 
-    private fun checkCollisionBelow() {
-        //setOffsets()
-        val xW = currentBlock[0].lastIndex
-        val yH = currentBlock.lastIndex
-
-        for (x in 0..xW) {
-            for (y in currentBlock.lastIndex downTo 0) {
-                //kolla om den är på nederrsta raden
-                if (currentBlock[y][x] != 0 && position.y + y > 18) {
-                    newRound = true
-                    insertBlock(currentBlock, position)
-                    position.y = 0
-                    return
-                }
-                //kolla om positionen under har innehåll(andra byggstenar)
+    private fun isCollision(): Boolean {
+        for (y in currentBlock.indices) {
+            for (x in currentBlock[y].indices) {
                 if (currentBlock[y][x] != 0) {
-                    if (position.x + x > 11) {
-                        position.x--
+                    if ((position.y + y) in 0..19) {
+                        if ((position.x + x) in 0..11) {
+                            if (GameBoard.arr[y + position.y][x + position.x] != 0) {
+                                return true
+                            }
+                        }
+                        else{
+                            return true
+                        }
                     }
-                    if (position.x + x < 0) {
-                        position.x++
-                    }
-                    if (GameBoard.arr[y + (position.y + 1)][position.x + x] != 0) {
-                        newRound = true
-                        insertBlock(currentBlock, position)
-                        position.y = 0
-                        return
-                    }
-                }
-            }
-        }
-        insertBlock(currentBlock, position)
-        position.y++
-    }
-
-    private fun checkCollisionToTheSides(): Boolean {
-        val xW = currentBlock[0].lastIndex
-        val yH = currentBlock.lastIndex
-
-        for (x in 0..xW) {
-            for (y in 0..yH) {
-                if (currentBlock[y][x] != 0) {
-                    if ( position.x + x < 1 || position.x + x > 10){
+                    else{
                         return true
                     }
-                    /*  if (position.x + x < 1 || position.x + x > 10) {
-                          return true
-                      }*/
                 }
             }
         }
@@ -200,10 +168,10 @@ class GameFragment : Fragment() {
     }
 
 
+
     private fun createBlock(type: Char): Array<Array<Int>> {
         return when (type) {
             'I' -> {
-                offset = 0
                 return arrayOf(
                     arrayOf(0, 1, 0, 0),
                     arrayOf(0, 1, 0, 0),
@@ -258,44 +226,30 @@ class GameFragment : Fragment() {
         }
     }
 
-/*   override fun onTouchEvent(event: MotionEvent): Boolean {
-       val touchX = event.x
-       val touchY = event.y
-
-       when (event.action) {
-           MotionEvent.ACTION_DOWN -> touch(touchX, touchY)
-           // MotionEvent.ACTION_MOVE -> touchMove()
-           //MotionEvent.ACTION_UP -> touchUp()
-       }
-       return true
-   }
-*/
-   private fun touch(touchX: Float, touchY: Float) {
+    private fun movePlayerToTheSides(dir: Int) {
+        removeBlock()
+        position.x += dir
+        if (!isCollision()) {
+            insertBlock()
+        } else {
+            position.x -= dir
+            insertBlock()
+        }
+    }
 
 
-       if (touchX < 524 && touchY > 1235) {
-           if (position.x > 5 || !checkCollisionToTheSides()) {
-               removeBlock(position, currentBlock)
-               position.x--
+    private fun touch(touchX: Float, touchY: Float) {
 
+        if (touchX < 524 && touchY > 1235) {
+            movePlayerToTheSides(-1)
+        }
 
-           }
-       }
-
-       if (touchX > 524 && touchY > 1235) {
-           if (position.x < 4 || !checkCollisionToTheSides()) {
-               removeBlock(position, currentBlock)
-               position.x++
-
-
-           }
-
-       }
-       if (touchY < 1235) {
-           removeBlock(position, currentBlock)
-           rotateBlock()
-       }
-
-   }
-
+        if (touchX > 524 && touchY > 1235) {
+                movePlayerToTheSides(1)
+            }
+        if (touchY < 1235) {
+            removeBlock()
+            rotateBlock()
+        }
+    }
 }
