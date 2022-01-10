@@ -1,13 +1,11 @@
 package com.poema.tetris.ui.fragments
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.*
 import androidx.fragment.app.Fragment
 import com.poema.tetris.*
 
-import android.view.MotionEvent
 
 import kotlinx.coroutines.*
 
@@ -20,7 +18,7 @@ class GameFragment : Fragment() {
     private var job: Job? = null
 
 
-    @SuppressLint("ClickableViewAccessibility")
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -33,23 +31,28 @@ class GameFragment : Fragment() {
             displayMetrics.heightPixels - (displayMetrics.heightPixels * (PERCENTAGE_OF_BOARD_HEIGHT))
         gameView = DynamicView(activity, w.toInt(), h.toInt())
 
-        gameView.setOnTouchListener { _, event ->
+        val goRight: View = requireActivity().findViewById(R.id.goRight)
+        val goLeft: View = requireActivity().findViewById(R.id.goLeft)
+        val rotateLeft: View = requireActivity().findViewById(R.id.rotateLeft)
+        val rotateRight: View = requireActivity().findViewById(R.id.rotateRight)
 
-            val touchX = event.x
-            val touchY = event.y
-
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                touch(touchX, touchY)
-            }
-            true
+        goLeft.setOnClickListener {
+            movePlayerToTheSides(-1)
         }
+        goRight.setOnClickListener{
+            movePlayerToTheSides(1)
+        }
+        rotateRight.setOnClickListener {
+            removeBlock()
+            rotateBlock()
+        }
+
         pickBlock()
         return gameView
     }
 
 
     private fun pickBlock() {
-
         if (newRound) {
             checkForAndRemoveFullRows()
             val code = BLOCK_CODES.random()
@@ -131,7 +134,6 @@ class GameFragment : Fragment() {
         }
         gameView.invalidate()
     }
-
 
     private fun rotateBlock() {
         val n = currentBlock.size
@@ -234,22 +236,6 @@ class GameFragment : Fragment() {
         } else {
             position.x -= dir
             insertBlock()
-        }
-    }
-
-
-    private fun touch(touchX: Float, touchY: Float) {
-
-        if (touchX < 524 && touchY > 1235) {
-            movePlayerToTheSides(-1)
-        }
-
-        if (touchX > 524 && touchY > 1235) {
-                movePlayerToTheSides(1)
-            }
-        if (touchY < 1235) {
-            removeBlock()
-            rotateBlock()
         }
     }
 }
