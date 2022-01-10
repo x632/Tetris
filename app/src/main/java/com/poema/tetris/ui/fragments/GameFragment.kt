@@ -52,19 +52,17 @@ class GameFragment : Fragment() {
         }
         rotateRight.setOnClickListener {
             removeBlock()
-            rotateBlock(-1)
+            performRotation(-1)
         }
         rotateLeft.setOnClickListener {
             removeBlock()
-            rotateBlock(1)
+            performRotation(1)
+            insertBlock()
         }
 
         pickBlock()
         return gameView
     }
-
-
-
 
     private fun pickBlock() {
 
@@ -160,6 +158,21 @@ class GameFragment : Fragment() {
         gameView.invalidate()
     }
 
+    fun performRotation(dir:Int) {
+        val pos = position.x;
+        var offset = 1
+        rotateBlock(dir)
+        while (isCollision()) {
+            position.x += offset
+            offset = -(offset + if (offset > 0) 1 else -1)
+            if (offset > currentBlock[0].size) {
+                rotateBlock(-dir)
+                position.x = pos
+                return
+            }
+        }
+    }
+
     private fun rotateBlock(dir: Int) {
         val n = currentBlock.size
         val turnedBlock = Array(n) { Array<Int>(n) { 0 } }
@@ -174,7 +187,7 @@ class GameFragment : Fragment() {
             }
         }
         currentBlock = turnedBlock
-        insertBlock()
+
     }
 
     private fun isCollision(): Boolean {
@@ -197,7 +210,6 @@ class GameFragment : Fragment() {
         }
         return false
     }
-
 
     private fun createBlock(type: Char): Array<Array<Int>> {
         return when (type) {
