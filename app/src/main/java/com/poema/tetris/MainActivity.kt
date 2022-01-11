@@ -34,36 +34,12 @@ const val INTERVAL = 300L
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var gameView: DynamicView
-    private var currentBlock: Array<Array<Int>> = arrayOf<Array<Int>>()
-    private var position = Position(5, 0)
-    private var newRound = true
-    private var offset = 0
-
-
+    private var binding: ActivityMainBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val displayMetrics: DisplayMetrics = this.resources.displayMetrics
-        val w =
-            displayMetrics.widthPixels - (displayMetrics.widthPixels * (PERCENTAGE_OF_BOARD_WIDTH))
-        val h =
-            displayMetrics.heightPixels - (displayMetrics.heightPixels * (PERCENTAGE_OF_BOARD_HEIGHT))
-        gameView = DynamicView(this, w.toInt(), h.toInt())
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding!!.root)
     }
-
-    fun triggerRebirth(context: Context) {
-        val packageManager = context.packageManager
-        val intent = packageManager.getLaunchIntentForPackage(context.packageName)
-        val componentName = intent!!.component
-        val mainIntent = Intent.makeRestartActivityTask(componentName)
-        context.startActivity(mainIntent)
-        Runtime.getRuntime().exit(0)
-    }
-
 }
 

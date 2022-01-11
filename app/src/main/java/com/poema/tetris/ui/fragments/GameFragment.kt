@@ -1,7 +1,5 @@
 package com.poema.tetris.ui.fragments
 
-
-import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -79,7 +77,6 @@ class GameFragment : Fragment() {
     }
 
     private fun pickBlock() {
-
         if (newRound) {
             removeFullRows()
             val code = BLOCK_CODES.random()
@@ -95,7 +92,6 @@ class GameFragment : Fragment() {
             job?.cancel()
             onEnd()
         }
-
         removeBlock()
         position.y++
         if (isCollision()) {
@@ -125,10 +121,6 @@ class GameFragment : Fragment() {
         context.startActivity(mainIntent)
         Runtime.getRuntime().exit(0)
     }
-
-
-
-
 
     private fun removeFullRows() {
         var amountOfRows = 0
@@ -175,16 +167,15 @@ class GameFragment : Fragment() {
 
     private fun playTetrisSound(rows: Int) {
 
-        CoroutineScope(Dispatchers.Main).launch {
+        CoroutineScope(Main).launch {
             tetrisSound.start()
-            delay(50)
-            scoreTV.text = ""
-            delay(50)
-            scoreTV.text = "TETRIS 320 POINTS!!"
-            delay(50)
-            updateScore(rows)
+            for (index in 0..3){
+                scoreTV.text = ""
+                delay(200)
+                scoreTV.text = "TETRIS 640 POINTS!!"
+                delay(300)
+            }
         }
-
     }
 
     private fun pause() {
@@ -290,7 +281,4 @@ class GameFragment : Fragment() {
             insertBlock()
         }
     }
-
-
-
 }

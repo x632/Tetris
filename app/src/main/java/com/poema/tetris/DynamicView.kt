@@ -27,13 +27,13 @@ class DynamicView(context: Context?, w: Int, h: Int) :
             for (x in 0..11) {
                 if (GameBoard.arr[y][x] != 0) {
                     paint.color = when (GameBoard.arr[y][x]) {
-                        1 -> LTGRAY
-                        2 -> RED
-                        3 -> GREEN
-                        4 -> BLUE
-                        5 -> YELLOW
-                        6 -> MAGENTA
-                        7 -> GRAY
+                        1 -> rgb(255,51,51) //red
+                        2 -> rgb(255,153,51) //orange
+                        3 -> rgb(255,255,51) //yellow
+                        4 -> rgb(153,255,51) //lightgreen
+                        5 -> rgb(51,153,255)  //magenta
+                        6 -> rgb(153,51,255) //purple
+                        7 -> rgb(255,51,255) //pink
                         else -> {
                             0
                         }
@@ -62,6 +62,4 @@ class DynamicView(context: Context?, w: Int, h: Int) :
         }
         canvas.drawBitmap(bitmap, null, bounds, null)
     }
-
-
 }

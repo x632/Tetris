@@ -17,7 +17,9 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/fragmentContainerView"
+        />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainerView"
@@ -33,7 +35,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraint"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="210dp"
 
         app:layout_constraintBottom_toBottomOf="parent"
         tools:layout_editor_absoluteX="116dp">
@@ -45,49 +47,49 @@
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
             android:text="DOWN"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.482"
+            app:layout_constraintHorizontal_bias="0.500"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/rotateLeft"
+            android:layout_width="130dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="10dp"
+            android:drawableLeft="@drawable/rotateleft"
+            android:text="TURN LEFT"
+            app:layout_constraintBottom_toTopOf="@+id/goLeft"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/constraint" />
 
         <Button
-            android:id="@+id/rotateLeft"
-            android:layout_width="180dp"
-            android:layout_height="70dp"
-            android:layout_marginStart="10dp"
-            android:drawableLeft="@drawable/rotateleft"
-            android:text="ROTATE LEFT"
-            app:layout_constraintBottom_toBottomOf="@+id/rotateRight"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/goDown"
-             />
-
-        <Button
             android:id="@+id/rotateRight"
-            android:layout_width="180dp"
+            android:layout_width="130dp"
             android:layout_height="0dp"
             android:layout_marginEnd="10dp"
             android:drawableLeft="@drawable/rotateright"
-            android:text="ROTATE RIGHT"
-            app:layout_constraintBottom_toTopOf="@+id/goRight"
+            android:text="TURN RIGHT"
+            app:layout_constraintBottom_toTopOf="@id/goRight"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/goDown" />
+            app:layout_constraintTop_toTopOf="@id/constraint" />
 
         <Button
             android:id="@+id/goLeft"
-            android:layout_width="180dp"
+            android:layout_width="130dp"
             android:layout_height="0dp"
             android:layout_marginStart="10dp"
             android:layout_marginBottom="10dp"
             android:text="GO LEFT"
             app:layout_constraintBottom_toBottomOf="@+id/constraint"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rotateRight"
+            app:layout_constraintTop_toBottomOf="@+id/rotateLeft"
             />
 
         <Button
             android:id="@+id/goRight"
-            android:layout_width="180dp"
+            android:layout_width="130dp"
             android:layout_height="0dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"
