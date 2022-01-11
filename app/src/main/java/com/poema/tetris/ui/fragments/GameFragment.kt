@@ -1,14 +1,19 @@
 package com.poema.tetris.ui.fragments
 
+
+import android.content.Context
+import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.*
+import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.poema.tetris.*
+import com.poema.tetris.R.id.goDown
 import kotlinx.coroutines.*
-
+import kotlinx.coroutines.Dispatchers.Main
 
 class GameFragment : Fragment() {
 
@@ -20,11 +25,15 @@ class GameFragment : Fragment() {
     private var score = 0
     private lateinit var scoreTV: TextView
     lateinit var mp: MediaPlayer
+    lateinit var tetrisSound: MediaPlayer
+    private var gameOn = false
+    private lateinit var startDownBtn: Button
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        tetrisSound = MediaPlayer.create(activity, R.raw.tetris)
         mp = MediaPlayer.create(activity, R.raw.pling)
         val displayMetrics: DisplayMetrics = this.resources.displayMetrics
         val w =
@@ -38,12 +47,19 @@ class GameFragment : Fragment() {
         val goLeft: View = requireActivity().findViewById(R.id.goLeft)
         val rotateLeft: View = requireActivity().findViewById(R.id.rotateLeft)
         val rotateRight: View = requireActivity().findViewById(R.id.rotateRight)
-        val goDown: View = requireActivity().findViewById(R.id.goDown)
+        startDownBtn = requireActivity().findViewById(goDown)
 
-        goDown.setOnClickListener{
-            movePlayerDown()
+        startDownBtn.text = "START"
+
+        startDownBtn.setOnClickListener {
+            startDownBtn.text = "DOWN"
+            if (gameOn) movePlayerDown()
+            else {
+                //start
+                gameOn = true
+                pickBlock()
+            }
         }
-
         goLeft.setOnClickListener {
             movePlayerToTheSides(-1)
         }
@@ -59,18 +75,15 @@ class GameFragment : Fragment() {
             performRotation(1)
             insertBlock()
         }
-
-        pickBlock()
         return gameView
     }
 
     private fun pickBlock() {
 
         if (newRound) {
-            checkForAndRemoveFullRows()
+            removeFullRows()
             val code = BLOCK_CODES.random()
-            currentBlock = createBlock(code)
-
+            currentBlock = GameBoard.createBlock(code)
         }
         newRound = false
         mainFunction()
@@ -78,6 +91,11 @@ class GameFragment : Fragment() {
     }
 
     private fun mainFunction() {
+        if (position.y == 0 && isCollision()) {
+            job?.cancel()
+            onEnd()
+        }
+
         removeBlock()
         position.y++
         if (isCollision()) {
@@ -93,7 +111,26 @@ class GameFragment : Fragment() {
         }
     }
 
-    private fun checkForAndRemoveFullRows() {
+    private fun onEnd() {
+        GameBoard.emptyGameBoard()
+        restart()
+    }
+
+    private fun restart() {
+        val context=requireContext()
+        val packageManager = context.packageManager
+        val intent = packageManager.getLaunchIntentForPackage(context.packageName)
+        val componentName = intent!!.component
+        val mainIntent = Intent.makeRestartActivityTask(componentName)
+        context.startActivity(mainIntent)
+        Runtime.getRuntime().exit(0)
+    }
+
+
+
+
+
+    private fun removeFullRows() {
         var amountOfRows = 0
         outer@ while (true) {
             for (y in GameBoard.arr.lastIndex downTo 0) {
@@ -103,6 +140,7 @@ class GameFragment : Fragment() {
                 }
                 if (sum == 12) {
                     CoroutineScope(Dispatchers.Main).launch {
+                        //make sound
                         mp.start()
                     }
                     amountOfRows++
@@ -122,15 +160,36 @@ class GameFragment : Fragment() {
             break
         }
         if (amountOfRows != 0) {
-            score += (amountOfRows * 10)*(2*amountOfRows)
-            val text = "SCORE: ${score}"
-            scoreTV.text = text
+            if ((amountOfRows * 10) * (2 * amountOfRows) == 320) {
+                playTetrisSound(amountOfRows)
+            }
+            updateScore(amountOfRows)
         }
+    }
+
+    private fun updateScore(rows: Int) {
+        score += (rows * 10) * (2 * rows)
+        val text = "SCORE: ${score}"
+        scoreTV.text = text
+    }
+
+    private fun playTetrisSound(rows: Int) {
+
+        CoroutineScope(Dispatchers.Main).launch {
+            tetrisSound.start()
+            delay(50)
+            scoreTV.text = ""
+            delay(50)
+            scoreTV.text = "TETRIS 320 POINTS!!"
+            delay(50)
+            updateScore(rows)
+        }
+
     }
 
     private fun pause() {
         job?.let { job!!.cancel() }
-        job = CoroutineScope(Dispatchers.Main).launch {
+        job = CoroutineScope(Main).launch {
             delay(INTERVAL)
             pickBlock()
         }
@@ -158,7 +217,7 @@ class GameFragment : Fragment() {
         gameView.invalidate()
     }
 
-    fun performRotation(dir:Int) {
+    private fun performRotation(dir: Int) {
         val pos = position.x;
         var offset = 1
         rotateBlock(dir)
@@ -178,16 +237,15 @@ class GameFragment : Fragment() {
         val turnedBlock = Array(n) { Array<Int>(n) { 0 } }
         for (i in 0 until n) {
             for (j in 0 until n) {
-                if(dir<0){
-                    turnedBlock[i][j] = currentBlock[n-1-j][i]
-                }else{
-                    turnedBlock[i][j] = currentBlock[j][n-i-1]
+                if (dir < 0) {
+                    turnedBlock[i][j] = currentBlock[n - 1 - j][i]
+                } else {
+                    turnedBlock[i][j] = currentBlock[j][n - i - 1]
                 }
 
             }
         }
         currentBlock = turnedBlock
-
     }
 
     private fun isCollision(): Boolean {
@@ -211,63 +269,6 @@ class GameFragment : Fragment() {
         return false
     }
 
-    private fun createBlock(type: Char): Array<Array<Int>> {
-        return when (type) {
-            'I' -> {
-                return arrayOf(
-                    arrayOf(0, 1, 0, 0),
-                    arrayOf(0, 1, 0, 0),
-                    arrayOf(0, 1, 0, 0),
-                    arrayOf(0, 1, 0, 0),
-                )
-            }
-            'L' -> {
-                return arrayOf(
-                    arrayOf(0, 2, 0),
-                    arrayOf(0, 2, 0),
-                    arrayOf(0, 2, 2),
-                )
-            }
-            'J' -> {
-                return arrayOf(
-                    arrayOf(0, 3, 0),
-                    arrayOf(0, 3, 0),
-                    arrayOf(3, 3, 0),
-                )
-            }
-            'O' -> {
-                return arrayOf(
-                    arrayOf(4, 4),
-                    arrayOf(4, 4)
-                )
-            }
-            'Z' -> {
-                return arrayOf(
-                    arrayOf(5, 5, 0),
-                    arrayOf(0, 5, 5),
-                    arrayOf(0, 0, 0),
-                )
-            }
-            'S' -> {
-                return arrayOf(
-                    arrayOf(0, 6, 6),
-                    arrayOf(6, 6, 0),
-                    arrayOf(0, 0, 0),
-                )
-            }
-            'T' -> {
-                return arrayOf(
-                    arrayOf(0, 7, 0),
-                    arrayOf(7, 7, 7),
-                    arrayOf(0, 0, 0),
-                )
-            }
-            else -> {
-                emptyArray<Array<Int>>()
-            }
-        }
-    }
-
     private fun movePlayerToTheSides(dir: Int) {
         removeBlock()
         position.x += dir
@@ -282,11 +283,14 @@ class GameFragment : Fragment() {
     private fun movePlayerDown() {
         removeBlock()
         position.y++
-        if(!isCollision()){
+        if (!isCollision()) {
             insertBlock()
-        }else{
+        } else {
             position.y--
             insertBlock()
         }
     }
+
+
+
 }
