@@ -26,8 +26,8 @@ import android.content.pm.PackageManager
 
 
 
-const val PERCENTAGE_OF_BOARD_HEIGHT = 0.2
-const val PERCENTAGE_OF_BOARD_WIDTH = 0.05
+const val PERCENTAGE_OF_HEIGHT_TO_LEAVE_OUT = 0.0
+const val PERCENTAGE_OF_WIDTH_TO_LEAVE_OUT = 0.00
 const val BLOCK_CODES = "TJLOSZI"
 const val INTERVAL = 300L
 

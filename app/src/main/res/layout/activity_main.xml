@@ -12,20 +12,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="SCORE"
-        android:textColor="#FFFFFF"
         android:textAlignment="center"
+        android:textColor="#FFFFFF"
+
         android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/fragmentContainerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/fragmentContainerView"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainerView"
         android:name="com.poema.tetris.ui.fragments.GameFragment"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/guideline2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/score"
@@ -35,9 +36,9 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraint"
         android:layout_width="match_parent"
-        android:layout_height="210dp"
-
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/guideline2"
         tools:layout_editor_absoluteX="116dp">
 
         <Button
@@ -57,7 +58,8 @@
             android:id="@+id/rotateLeft"
             android:layout_width="130dp"
             android:layout_height="0dp"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:drawableLeft="@drawable/rotateleft"
             android:text="TURN LEFT"
             app:layout_constraintBottom_toTopOf="@+id/goLeft"
@@ -68,7 +70,8 @@
             android:id="@+id/rotateRight"
             android:layout_width="130dp"
             android:layout_height="0dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:drawableLeft="@drawable/rotateright"
             android:text="TURN RIGHT"
             app:layout_constraintBottom_toTopOf="@id/goRight"
@@ -79,13 +82,12 @@
             android:id="@+id/goLeft"
             android:layout_width="130dp"
             android:layout_height="0dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
             android:text="GO LEFT"
             app:layout_constraintBottom_toBottomOf="@+id/constraint"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rotateLeft"
-            />
+            app:layout_constraintTop_toBottomOf="@+id/rotateLeft" />
 
         <Button
             android:id="@+id/goRight"
@@ -94,13 +96,20 @@
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"
             android:text="GO RIGHT"
-            app:layout_constraintTop_toBottomOf="@+id/rotateRight"
-            app:layout_constraintBottom_toBottomOf="@+id/constraint"
-            app:layout_constraintEnd_toEndOf="parent" />
 
+            app:layout_constraintBottom_toBottomOf="@+id/constraint"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rotateRight" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintGuide_percent="0.75"
+        android:orientation="horizontal" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

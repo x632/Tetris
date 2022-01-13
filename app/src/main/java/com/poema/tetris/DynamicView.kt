@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.*
 import android.graphics.Color.*
 import android.view.View
-import java.util.*
 
 
 class DynamicView(context: Context?, w: Int, h: Int) :
@@ -12,13 +11,13 @@ class DynamicView(context: Context?, w: Int, h: Int) :
 
     private var bitmap: Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
     private var frameDrawer: Canvas = Canvas(bitmap)
-    private var bounds: Rect = Rect(60, 20, w, h-200)
+    private var bounds: Rect = Rect(24, 0, w-24, h)
     private var paint: Paint = Paint()
 
 
     override fun onDraw(canvas: Canvas) {
-        val h = height - (height * (PERCENTAGE_OF_BOARD_HEIGHT))
-        val w = width - (width * (PERCENTAGE_OF_BOARD_WIDTH))
+        val h = height - (height * (PERCENTAGE_OF_HEIGHT_TO_LEAVE_OUT))
+        val w = width - (width * (PERCENTAGE_OF_WIDTH_TO_LEAVE_OUT))
 
         val blockWidth = (w / 12).toFloat()
         val blockHeight = (h / 20).toFloat()

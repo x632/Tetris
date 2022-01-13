@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers.Main
 
 class GameFragment : Fragment() {
 
+    private var introJob: Job? = null
     private lateinit var gameView: DynamicView
     private var currentBlock: Array<Array<Int>> = arrayOf<Array<Int>>()
     private var position = Position(5, 0)
@@ -35,9 +36,9 @@ class GameFragment : Fragment() {
         mp = MediaPlayer.create(activity, R.raw.pling)
         val displayMetrics: DisplayMetrics = this.resources.displayMetrics
         val w =
-            displayMetrics.widthPixels - (displayMetrics.widthPixels * (PERCENTAGE_OF_BOARD_WIDTH))
+            displayMetrics.widthPixels - (displayMetrics.widthPixels * (PERCENTAGE_OF_WIDTH_TO_LEAVE_OUT))
         val h =
-            displayMetrics.heightPixels - (displayMetrics.heightPixels * (PERCENTAGE_OF_BOARD_HEIGHT))
+            displayMetrics.heightPixels - (displayMetrics.heightPixels * (PERCENTAGE_OF_HEIGHT_TO_LEAVE_OUT))
         gameView = DynamicView(activity, w.toInt(), h.toInt())
 
         scoreTV = requireActivity().findViewById(R.id.score)
@@ -48,13 +49,16 @@ class GameFragment : Fragment() {
         startDownBtn = requireActivity().findViewById(goDown)
 
         startDownBtn.text = "START"
+        introBoard()
 
         startDownBtn.setOnClickListener {
             startDownBtn.text = "DOWN"
             if (gameOn) movePlayerDown()
             else {
                 //start
+                introJob?.let { introJob!!.cancel() }
                 gameOn = true
+                GameBoard.emptyGameBoard()
                 pickBlock()
             }
         }
@@ -77,6 +81,7 @@ class GameFragment : Fragment() {
     }
 
     private fun pickBlock() {
+
         if (newRound) {
             removeFullRows()
             val code = BLOCK_CODES.random()
@@ -88,6 +93,7 @@ class GameFragment : Fragment() {
     }
 
     private fun mainFunction() {
+
         if (position.y == 0 && isCollision()) {
             job?.cancel()
             onEnd()
@@ -113,7 +119,7 @@ class GameFragment : Fragment() {
     }
 
     private fun restart() {
-        val context=requireContext()
+        val context = requireContext()
         val packageManager = context.packageManager
         val intent = packageManager.getLaunchIntentForPackage(context.packageName)
         val componentName = intent!!.component
@@ -123,6 +129,7 @@ class GameFragment : Fragment() {
     }
 
     private fun removeFullRows() {
+
         var amountOfRows = 0
         outer@ while (true) {
             for (y in GameBoard.arr.lastIndex downTo 0) {
@@ -131,7 +138,7 @@ class GameFragment : Fragment() {
                     if (value != 0) sum++
                 }
                 if (sum == 12) {
-                    CoroutineScope(Dispatchers.Main).launch {
+                    CoroutineScope(Main).launch {
                         //make sound
                         mp.start()
                     }
@@ -152,7 +159,7 @@ class GameFragment : Fragment() {
             break
         }
         if (amountOfRows != 0) {
-            if ((amountOfRows * 10) * (2 * amountOfRows) == 320) {
+            if (amountOfRows == 4) {
                 playTetrisSound(amountOfRows)
             }
             updateScore(amountOfRows)
@@ -160,6 +167,7 @@ class GameFragment : Fragment() {
     }
 
     private fun updateScore(rows: Int) {
+
         score += (rows * 10) * (2 * rows)
         val text = "SCORE: ${score}"
         scoreTV.text = text
@@ -169,16 +177,18 @@ class GameFragment : Fragment() {
 
         CoroutineScope(Main).launch {
             tetrisSound.start()
-            for (index in 0..3){
+            for (index in 0..3) {
                 scoreTV.text = ""
                 delay(200)
-                scoreTV.text = "TETRIS 640 POINTS!!"
+                scoreTV.text = "TETRIS 320 POINTS!!"
                 delay(300)
+                scoreTV.text = ""
             }
         }
     }
 
     private fun pause() {
+
         job?.let { job!!.cancel() }
         job = CoroutineScope(Main).launch {
             delay(INTERVAL)
@@ -187,6 +197,7 @@ class GameFragment : Fragment() {
     }
 
     private fun insertBlock() {
+
         currentBlock.forEachIndexed { rowIndex, _ ->
             currentBlock[rowIndex].forEachIndexed { columnIndex, value ->
                 if (value != 0) {
@@ -198,6 +209,7 @@ class GameFragment : Fragment() {
     }
 
     private fun removeBlock() {
+
         for (rowIndex in 0..currentBlock.lastIndex) {
             for (columnIndex in 0..currentBlock.lastIndex) {
                 if (currentBlock[rowIndex][columnIndex] != 0) {
@@ -209,6 +221,7 @@ class GameFragment : Fragment() {
     }
 
     private fun performRotation(dir: Int) {
+
         val pos = position.x;
         var offset = 1
         rotateBlock(dir)
@@ -224,6 +237,7 @@ class GameFragment : Fragment() {
     }
 
     private fun rotateBlock(dir: Int) {
+
         val n = currentBlock.size
         val turnedBlock = Array(n) { Array<Int>(n) { 0 } }
         for (i in 0 until n) {
@@ -261,6 +275,7 @@ class GameFragment : Fragment() {
     }
 
     private fun movePlayerToTheSides(dir: Int) {
+
         removeBlock()
         position.x += dir
         if (!isCollision()) {
@@ -272,6 +287,7 @@ class GameFragment : Fragment() {
     }
 
     private fun movePlayerDown() {
+
         removeBlock()
         position.y++
         if (!isCollision()) {
@@ -279,6 +295,26 @@ class GameFragment : Fragment() {
         } else {
             position.y--
             insertBlock()
+        }
+    }
+
+    private fun introBoard() {
+
+        var pos = 0
+        introJob = CoroutineScope(Main).launch {
+            while (true) {
+                for (indexY in 0..19) {
+                    for (indexX in (0 + pos)..(11 + pos)) {
+                        GameBoard.arr[indexY][indexX - pos] = GameBoard.introBlock[indexY][indexX]
+                    }
+                    delay(2)
+                    gameView.invalidate()
+                    if (pos > 33) {
+                        pos = 0
+                    }
+                }
+                pos++
+            }
         }
     }
 }
