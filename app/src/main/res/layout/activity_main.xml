@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#3C5421"
+    android:background="#4D384D"
     tools:context=".MainActivity">
 
     <TextView
@@ -47,6 +47,7 @@
             android:layout_height="60dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
+            android:textColor="#57FB00"
             android:text="DOWN"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -56,7 +57,7 @@
 
         <Button
             android:id="@+id/rotateLeft"
-            android:layout_width="130dp"
+            android:layout_width="140dp"
             android:layout_height="0dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
@@ -68,7 +69,7 @@
 
         <Button
             android:id="@+id/rotateRight"
-            android:layout_width="130dp"
+            android:layout_width="140dp"
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
@@ -80,7 +81,7 @@
 
         <Button
             android:id="@+id/goLeft"
-            android:layout_width="130dp"
+            android:layout_width="140dp"
             android:layout_height="0dp"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="8dp"
@@ -91,7 +92,7 @@
 
         <Button
             android:id="@+id/goRight"
-            android:layout_width="130dp"
+            android:layout_width="140dp"
             android:layout_height="0dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="10dp"

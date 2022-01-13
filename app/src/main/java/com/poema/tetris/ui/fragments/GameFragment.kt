@@ -1,6 +1,8 @@
 package com.poema.tetris.ui.fragments
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.Color.BLACK
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -12,12 +14,13 @@ import com.poema.tetris.*
 import com.poema.tetris.R.id.goDown
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
+import kotlin.random.Random
 
 class GameFragment : Fragment() {
 
     private var introJob: Job? = null
     private lateinit var gameView: DynamicView
-    private var currentBlock: Array<Array<Int>> = arrayOf<Array<Int>>()
+    private var currentBlock: Array<Array<Int>> = arrayOf()
     private var position = Position(5, 0)
     private var newRound = true
     private var job: Job? = null
@@ -48,11 +51,12 @@ class GameFragment : Fragment() {
         val rotateRight: View = requireActivity().findViewById(R.id.rotateRight)
         startDownBtn = requireActivity().findViewById(goDown)
 
-        startDownBtn.text = "START"
+        startDownBtn.text = getString(R.string.start)
         introBoard()
 
         startDownBtn.setOnClickListener {
-            startDownBtn.text = "DOWN"
+            startDownBtn.text = getString(R.string.down)
+            startDownBtn.setTextColor(Color.WHITE)
             if (gameOn) movePlayerDown()
             else {
                 //start
@@ -83,7 +87,7 @@ class GameFragment : Fragment() {
     private fun pickBlock() {
 
         if (newRound) {
-            removeFullRows()
+            removeFullRowsAndDoScoreCount()
             val code = BLOCK_CODES.random()
             currentBlock = GameBoard.createBlock(code)
         }
@@ -114,11 +118,13 @@ class GameFragment : Fragment() {
     }
 
     private fun onEnd() {
+
         GameBoard.emptyGameBoard()
         restart()
     }
 
     private fun restart() {
+
         val context = requireContext()
         val packageManager = context.packageManager
         val intent = packageManager.getLaunchIntentForPackage(context.packageName)
@@ -128,7 +134,7 @@ class GameFragment : Fragment() {
         Runtime.getRuntime().exit(0)
     }
 
-    private fun removeFullRows() {
+    private fun removeFullRowsAndDoScoreCount() {
 
         var amountOfRows = 0
         outer@ while (true) {
@@ -158,29 +164,28 @@ class GameFragment : Fragment() {
             }
             break
         }
-        if (amountOfRows != 0) {
-            if (amountOfRows == 4) {
-                playTetrisSound(amountOfRows)
-            }
-            updateScore(amountOfRows)
+        if (amountOfRows == 4) {
+            playTetrisSound()
         }
+        updateScore(amountOfRows)
     }
 
     private fun updateScore(rows: Int) {
 
         score += (rows * 10) * (2 * rows)
-        val text = "SCORE: ${score}"
+        val text = "SCORE: $score"
         scoreTV.text = text
     }
 
-    private fun playTetrisSound(rows: Int) {
+    private fun playTetrisSound() {
 
         CoroutineScope(Main).launch {
             tetrisSound.start()
             for (index in 0..3) {
                 scoreTV.text = ""
+
                 delay(200)
-                scoreTV.text = "TETRIS 320 POINTS!!"
+                scoreTV.text = getString(R.string.tetris)
                 delay(300)
                 scoreTV.text = ""
             }
@@ -222,7 +227,7 @@ class GameFragment : Fragment() {
 
     private fun performRotation(dir: Int) {
 
-        val pos = position.x;
+        val pos = position.x
         var offset = 1
         rotateBlock(dir)
         while (isCollision()) {

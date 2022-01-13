@@ -6,18 +6,6 @@ package com.poema.tetris
 object GameBoard {
     var arr = Array(20) { Array<Int>(12) { 0 } }
 
-    fun getIntroColumn(x: Int): Array<Int> {
-        val columnOfText = Array<Int>(20) { 0 }
-        for (y in introBlock.indices) {
-            columnOfText[y] = introBlock[y][x]
-        }
-        return columnOfText
-    }
-
-    fun getZeroColumn(x: Int): Array<Int> {
-        return Array(20) { 0 }
-    }
-
     fun printArray() {
         for (array in arr) {
             println("!!! ${array.contentToString()}")
@@ -87,7 +75,7 @@ object GameBoard {
                 )
             }
             else -> {
-                emptyArray<Array<Int>>()
+                emptyArray()
             }
         }
     }
