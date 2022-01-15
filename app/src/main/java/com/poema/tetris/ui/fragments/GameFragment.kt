@@ -2,7 +2,6 @@ package com.poema.tetris.ui.fragments
 
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Color.BLACK
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -12,9 +11,9 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.poema.tetris.*
 import com.poema.tetris.R.id.goDown
+import com.poema.tetris.ui.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
-import kotlin.random.Random
 
 class GameFragment : Fragment() {
 
@@ -30,6 +29,8 @@ class GameFragment : Fragment() {
     lateinit var tetrisSound: MediaPlayer
     private var gameOn = false
     private lateinit var startDownBtn: Button
+    private var roundNumber = 0
+    private var interval = 1000L
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -90,14 +91,23 @@ class GameFragment : Fragment() {
             removeFullRowsAndDoScoreCount()
             val code = BLOCK_CODES.random()
             currentBlock = GameBoard.createBlock(code)
+            roundNumber++
+            if (roundNumber == INCREASE_SPEED_INTERVAL) {
+                increaseSpeed()
+            }
         }
+
         newRound = false
         mainFunction()
         pause()
     }
 
-    private fun mainFunction() {
+    private fun increaseSpeed() {
+        if (interval >50) interval -= 50L
+        roundNumber = 0
+    }
 
+    private fun mainFunction() {
         if (position.y == 0 && isCollision()) {
             job?.cancel()
             onEnd()
@@ -118,13 +128,11 @@ class GameFragment : Fragment() {
     }
 
     private fun onEnd() {
-
         GameBoard.emptyGameBoard()
         restart()
     }
 
     private fun restart() {
-
         val context = requireContext()
         val packageManager = context.packageManager
         val intent = packageManager.getLaunchIntentForPackage(context.packageName)
@@ -135,7 +143,6 @@ class GameFragment : Fragment() {
     }
 
     private fun removeFullRowsAndDoScoreCount() {
-
         var amountOfRows = 0
         outer@ while (true) {
             for (y in GameBoard.arr.lastIndex downTo 0) {
@@ -171,14 +178,12 @@ class GameFragment : Fragment() {
     }
 
     private fun updateScore(rows: Int) {
-
         score += (rows * 10) * (2 * rows)
         val text = "SCORE: $score"
         scoreTV.text = text
     }
 
     private fun playTetrisSound() {
-
         CoroutineScope(Main).launch {
             tetrisSound.start()
             for (index in 0..3) {
@@ -193,16 +198,14 @@ class GameFragment : Fragment() {
     }
 
     private fun pause() {
-
         job?.let { job!!.cancel() }
         job = CoroutineScope(Main).launch {
-            delay(INTERVAL)
+            delay(interval)
             pickBlock()
         }
     }
 
     private fun insertBlock() {
-
         currentBlock.forEachIndexed { rowIndex, _ ->
             currentBlock[rowIndex].forEachIndexed { columnIndex, value ->
                 if (value != 0) {
@@ -214,7 +217,6 @@ class GameFragment : Fragment() {
     }
 
     private fun removeBlock() {
-
         for (rowIndex in 0..currentBlock.lastIndex) {
             for (columnIndex in 0..currentBlock.lastIndex) {
                 if (currentBlock[rowIndex][columnIndex] != 0) {
@@ -226,7 +228,6 @@ class GameFragment : Fragment() {
     }
 
     private fun performRotation(dir: Int) {
-
         val pos = position.x
         var offset = 1
         rotateBlock(dir)
@@ -239,10 +240,10 @@ class GameFragment : Fragment() {
                 return
             }
         }
+        insertBlock()
     }
 
     private fun rotateBlock(dir: Int) {
-
         val n = currentBlock.size
         val turnedBlock = Array(n) { Array<Int>(n) { 0 } }
         for (i in 0 until n) {
@@ -252,7 +253,6 @@ class GameFragment : Fragment() {
                 } else {
                     turnedBlock[i][j] = currentBlock[j][n - i - 1]
                 }
-
             }
         }
         currentBlock = turnedBlock
@@ -280,7 +280,6 @@ class GameFragment : Fragment() {
     }
 
     private fun movePlayerToTheSides(dir: Int) {
-
         removeBlock()
         position.x += dir
         if (!isCollision()) {
@@ -292,7 +291,6 @@ class GameFragment : Fragment() {
     }
 
     private fun movePlayerDown() {
-
         removeBlock()
         position.y++
         if (!isCollision()) {
@@ -304,7 +302,6 @@ class GameFragment : Fragment() {
     }
 
     private fun introBoard() {
-
         var pos = 0
         introJob = CoroutineScope(Main).launch {
             while (true) {

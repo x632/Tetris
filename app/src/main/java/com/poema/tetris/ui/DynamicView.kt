@@ -1,9 +1,13 @@
-package com.poema.tetris
+package com.poema.tetris.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.graphics.Color.*
 import android.view.View
+import com.poema.tetris.GameBoard
+
+
 
 
 class DynamicView(context: Context?, w: Int, h: Int) :
@@ -16,11 +20,8 @@ class DynamicView(context: Context?, w: Int, h: Int) :
 
 
     override fun onDraw(canvas: Canvas) {
-        val h = height - (height * (PERCENTAGE_OF_HEIGHT_TO_LEAVE_OUT))
-        val w = width - (width * (PERCENTAGE_OF_WIDTH_TO_LEAVE_OUT))
-
-        val blockWidth = (w / 12).toFloat()
-        val blockHeight = (h / 20).toFloat()
+        val blockWidth = (width / 12).toFloat()
+        val blockHeight = (height / 20).toFloat()
 
         for (y in 0..19) {
             for (x in 0..11) {
