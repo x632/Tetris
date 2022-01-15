@@ -40,9 +40,9 @@ class GameFragment : Fragment() {
         mp = MediaPlayer.create(activity, R.raw.pling)
         val displayMetrics: DisplayMetrics = this.resources.displayMetrics
         val w =
-            displayMetrics.widthPixels - (displayMetrics.widthPixels * (PERCENTAGE_OF_WIDTH_TO_LEAVE_OUT))
+            displayMetrics.widthPixels
         val h =
-            displayMetrics.heightPixels - (displayMetrics.heightPixels * (PERCENTAGE_OF_HEIGHT_TO_LEAVE_OUT))
+            displayMetrics.heightPixels
         gameView = DynamicView(activity, w.toInt(), h.toInt())
 
         scoreTV = requireActivity().findViewById(R.id.score)
@@ -89,7 +89,7 @@ class GameFragment : Fragment() {
 
         if (newRound) {
             removeFullRowsAndDoScoreCount()
-            val code = BLOCK_CODES.random()
+            val code = "ILJOZST".random()
             currentBlock = GameBoard.createBlock(code)
             roundNumber++
             if (roundNumber == INCREASE_SPEED_INTERVAL) {
