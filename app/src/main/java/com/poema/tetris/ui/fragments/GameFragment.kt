@@ -305,9 +305,9 @@ class GameFragment : Fragment() {
         var pos = 0
         introJob = CoroutineScope(Main).launch {
             while (true) {
-                for (indexY in 0..19) {
+                for (indexY in 0..4) {
                     for (indexX in (0 + pos)..(11 + pos)) {
-                        GameScreen.arr[indexY][indexX - pos] = GameScreen.introBlock[indexY][indexX]
+                        GameScreen.arr[indexY+7][indexX - pos] = GameScreen.introBlock[indexY][indexX]
                     }
                     if (pos > 33) {
                         pos = 0
