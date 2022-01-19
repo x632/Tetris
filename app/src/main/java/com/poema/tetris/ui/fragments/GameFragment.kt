@@ -63,7 +63,7 @@ class GameFragment : Fragment() {
                 //start
                 introJob?.let { introJob!!.cancel() }
                 gameOn = true
-                GameBoard.emptyGameBoard()
+                GameScreen.emptyGameBoard()
                 pickBlock()
             }
         }
@@ -90,7 +90,7 @@ class GameFragment : Fragment() {
         if (newRound) {
             removeFullRowsAndDoScoreCount()
             val code = "ILJOZST".random()
-            currentBlock = GameBoard.createBlock(code)
+            currentBlock = GameScreen.createBlock(code)
             roundNumber++
             if (roundNumber == INCREASE_SPEED_INTERVAL) {
                 increaseSpeed()
@@ -128,7 +128,7 @@ class GameFragment : Fragment() {
     }
 
     private fun onEnd() {
-        GameBoard.emptyGameBoard()
+        GameScreen.emptyGameBoard()
         restart()
     }
 
@@ -145,9 +145,9 @@ class GameFragment : Fragment() {
     private fun removeFullRowsAndDoScoreCount() {
         var amountOfRows = 0
         outer@ while (true) {
-            for (y in GameBoard.arr.lastIndex downTo 0) {
+            for (y in GameScreen.arr.lastIndex downTo 0) {
                 var sum = 0
-                for (value in GameBoard.arr[y]) {
+                for (value in GameScreen.arr[y]) {
                     if (value != 0) sum++
                 }
                 if (sum == 12) {
@@ -158,14 +158,14 @@ class GameFragment : Fragment() {
                     amountOfRows++
                     val new2dArray = Array(20) { Array<Int>(12) { 0 } }
                     for (ind in 1..y) {
-                        new2dArray[ind] = GameBoard.arr[ind - 1]
+                        new2dArray[ind] = GameScreen.arr[ind - 1]
                     }
                     val newFirstLine = Array<Int>(12) { 0 }
                     new2dArray[0] = newFirstLine
                     for (ind in y until new2dArray.lastIndex) {
-                        new2dArray[ind + 1] = GameBoard.arr[ind + 1]
+                        new2dArray[ind + 1] = GameScreen.arr[ind + 1]
                     }
-                    GameBoard.arr = new2dArray
+                    GameScreen.arr = new2dArray
                     continue@outer
                 }
             }
@@ -209,7 +209,7 @@ class GameFragment : Fragment() {
         currentBlock.forEachIndexed { rowIndex, _ ->
             currentBlock[rowIndex].forEachIndexed { columnIndex, value ->
                 if (value != 0) {
-                    GameBoard.arr[rowIndex + position.y][columnIndex + position.x] = value
+                    GameScreen.arr[rowIndex + position.y][columnIndex + position.x] = value
                 }
             }
         }
@@ -220,7 +220,7 @@ class GameFragment : Fragment() {
         for (rowIndex in 0..currentBlock.lastIndex) {
             for (columnIndex in 0..currentBlock.lastIndex) {
                 if (currentBlock[rowIndex][columnIndex] != 0) {
-                    GameBoard.arr[rowIndex + position.y][columnIndex + position.x] = 0
+                    GameScreen.arr[rowIndex + position.y][columnIndex + position.x] = 0
                 }
             }
         }
@@ -264,7 +264,7 @@ class GameFragment : Fragment() {
                 if (currentBlock[y][x] != 0) {
                     if ((position.y + y) in 0..19) {
                         if ((position.x + x) in 0..11) {
-                            if (GameBoard.arr[y + position.y][x + position.x] != 0) {
+                            if (GameScreen.arr[y + position.y][x + position.x] != 0) {
                                 return true
                             }
                         } else {
@@ -307,14 +307,14 @@ class GameFragment : Fragment() {
             while (true) {
                 for (indexY in 0..19) {
                     for (indexX in (0 + pos)..(11 + pos)) {
-                        GameBoard.arr[indexY][indexX - pos] = GameBoard.introBlock[indexY][indexX]
+                        GameScreen.arr[indexY][indexX - pos] = GameScreen.introBlock[indexY][indexX]
                     }
-                    delay(2)
-                    gameView.invalidate()
                     if (pos > 33) {
                         pos = 0
                     }
                 }
+                delay(100)
+                gameView.invalidate()
                 pos++
             }
         }

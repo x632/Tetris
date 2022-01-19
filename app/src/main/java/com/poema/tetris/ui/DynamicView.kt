@@ -1,11 +1,10 @@
 package com.poema.tetris.ui
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.graphics.Color.*
 import android.view.View
-import com.poema.tetris.GameBoard
+import com.poema.tetris.GameScreen
 
 
 
@@ -25,8 +24,8 @@ class DynamicView(context: Context?, w: Int, h: Int) :
 
         for (y in 0..19) {
             for (x in 0..11) {
-                if (GameBoard.arr[y][x] != 0) {
-                    paint.color = when (GameBoard.arr[y][x]) {
+                if (GameScreen.arr[y][x] != 0) {
+                    paint.color = when (GameScreen.arr[y][x]) {
                         1 -> rgb(255,51,51) //red
                         2 -> rgb(255,153,51) //orange
                         3 -> rgb(255,255,51) //yellow

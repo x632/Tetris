@@ -1,7 +1,7 @@
 package com.poema.tetris
 
 
-object GameBoard {
+object GameScreen {
     var arr = Array(20) { Array<Int>(12) { 0 } }
 
     fun printArray() {
