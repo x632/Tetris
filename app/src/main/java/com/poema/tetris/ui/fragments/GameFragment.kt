@@ -29,8 +29,9 @@ class GameFragment : Fragment() {
     lateinit var tetrisSound: MediaPlayer
     private var gameOn = false
     private lateinit var startDownBtn: Button
-    private var roundNumber = 0
     private var interval = 1000L
+    private var time = 0L
+    private var lapTime = 0L
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,9 +61,11 @@ class GameFragment : Fragment() {
             startDownBtn.setTextColor(Color.WHITE)
             if (gameOn) movePlayerDown()
             else {
-                //start
+                //start ->
                 introJob?.let { introJob!!.cancel() }
                 gameOn = true
+                time = System.currentTimeMillis()
+                lapTime = System.currentTimeMillis() + INCREASE_SPEED_INTERVAL*1000
                 GameScreen.emptyGameBoard()
                 pickBlock()
             }
@@ -86,15 +89,10 @@ class GameFragment : Fragment() {
     }
 
     private fun pickBlock() {
-
         if (newRound) {
             removeFullRowsAndDoScoreCount()
             val code = "ILJOZST".random()
             currentBlock = GameScreen.createBlock(code)
-            roundNumber++
-            if (roundNumber == INCREASE_SPEED_INTERVAL) {
-                increaseSpeed()
-            }
         }
 
         newRound = false
@@ -103,11 +101,15 @@ class GameFragment : Fragment() {
     }
 
     private fun increaseSpeed() {
+        println("!!! SPEED HAS BEEN INCREASED TO INTERVAL = $interval!")
         if (interval >50) interval -= 50L
-        roundNumber = 0
     }
 
     private fun mainFunction() {
+        if(System.currentTimeMillis() > lapTime){
+            increaseSpeed()
+            lapTime = System.currentTimeMillis() + (INCREASE_SPEED_INTERVAL * 1000)
+        }
         if (position.y == 0 && isCollision()) {
             job?.cancel()
             onEnd()
