@@ -43,7 +43,7 @@ class GameFragment : Fragment() {
             displayMetrics.widthPixels
         val h =
             displayMetrics.heightPixels
-        gameView = DynamicView(activity, w.toInt(), h.toInt())
+        gameView = DynamicView(activity, w, h)
 
         scoreTV = requireActivity().findViewById(R.id.score)
         val goRight: View = requireActivity().findViewById(R.id.goRight)
