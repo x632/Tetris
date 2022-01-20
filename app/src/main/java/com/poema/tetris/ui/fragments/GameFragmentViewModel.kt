@@ -1,21 +1,13 @@
 package com.poema.tetris.ui.fragments
 
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.poema.tetris.GameScreen
 import com.poema.tetris.Position
-import com.poema.tetris.ui.INCREASE_SPEED_INTERVAL
 import kotlinx.coroutines.*
 
-
-
-const val MAKE_TETRIS_SOUND = 1
-const val MAKE_ROW_SOUND = 2
-const val RESTART = 3
-const val REFRESH_SCREEN = 4
 
 class GameFragmentViewModel : ViewModel() {
 
@@ -30,12 +22,17 @@ class GameFragmentViewModel : ViewModel() {
     private var time = 0L
     private var lapTime = 0L
 
+    sealed class UiInstruction {
+        object RefreshScreen : UiInstruction()
+        object MakeRowSound : UiInstruction()
+        object MakeTetrisSound: UiInstruction()
+        object Restart: UiInstruction()
+        data class Scoring(val row:Int) : UiInstruction()
+    }
 
-    private val _event: MutableLiveData<Int> = MutableLiveData<Int>()
-    val event: LiveData<Int> = _event
+    private val _uiInstruction: MutableLiveData<UiInstruction> = MutableLiveData<UiInstruction>()
+    val uiInstruction: MutableLiveData<UiInstruction> = _uiInstruction
 
-    private val _scoringRows: MutableLiveData<Int> = MutableLiveData<Int>()
-    val scoringRows: LiveData<Int> = _scoringRows
 
     fun onStart(){
         introJob?.let { introJob!!.cancel() }
@@ -96,7 +93,7 @@ class GameFragmentViewModel : ViewModel() {
                     if (value != 0) sum++
                 }
                 if (sum == 12) {
-                    _event.value = MAKE_ROW_SOUND
+                    _uiInstruction.value = UiInstruction.MakeRowSound
                     amountOfRows++
                     val new2dArray = Array(20) { Array<Int>(12) { 0 } }
                     for (ind in 1..y) {
@@ -114,10 +111,10 @@ class GameFragmentViewModel : ViewModel() {
             break
         }
         if (amountOfRows == 4) {
-            _event.value = MAKE_TETRIS_SOUND
+            _uiInstruction.value = UiInstruction.MakeTetrisSound
         }
+            _uiInstruction.value = UiInstruction.Scoring(amountOfRows)
 
-        _scoringRows.value = amountOfRows//updateScore(amountOfRows)
     }
 
     private fun pause() {
@@ -136,7 +133,7 @@ class GameFragmentViewModel : ViewModel() {
                 }
             }
         }
-        _event.value = REFRESH_SCREEN
+        _uiInstruction.value = UiInstruction.RefreshScreen
     }
 
     fun removeBlock() {
@@ -147,7 +144,7 @@ class GameFragmentViewModel : ViewModel() {
                 }
             }
         }
-        _event.value = REFRESH_SCREEN
+        _uiInstruction.value = UiInstruction.RefreshScreen
     }
 
     fun performRotation(dir: Int) {
@@ -168,7 +165,7 @@ class GameFragmentViewModel : ViewModel() {
 
     private fun rotateBlock(dir: Int) {
         val n = currentBlock.size
-        val turnedBlock = Array(n) { Array<Int>(n) { 0 } }
+        val turnedBlock = Array(n) { Array(n) { 0 } }
         for (i in 0 until n) {
             for (j in 0 until n) {
                 if (dir < 0) {
@@ -238,7 +235,7 @@ class GameFragmentViewModel : ViewModel() {
                     }
                 }
                 delay(100)
-                _event.value = REFRESH_SCREEN
+                _uiInstruction.value = UiInstruction.RefreshScreen
                 pos++
             }
         }
@@ -247,7 +244,7 @@ class GameFragmentViewModel : ViewModel() {
     private fun onEnd() {
         GameScreen.emptyGameBoard()
         job?.cancel()
-        _event.value= RESTART
+        _uiInstruction.value= UiInstruction.Restart
     }
 
 }

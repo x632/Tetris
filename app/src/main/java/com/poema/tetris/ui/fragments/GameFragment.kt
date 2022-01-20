@@ -16,6 +16,9 @@ import com.poema.tetris.ui.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
 
+
+const val INCREASE_SPEED_INTERVAL = 15
+
 class GameFragment : Fragment() {
 
     private val viewModel: GameFragmentViewModel by viewModels()
@@ -74,8 +77,8 @@ class GameFragment : Fragment() {
             viewModel.performRotation(1)
             viewModel.insertBlock()
         }
-        observeScoreEvent()
-        observeEvent()
+
+        observeInstructionsFromViewModel()
         return gameView
     }
 
@@ -90,19 +93,10 @@ class GameFragment : Fragment() {
     }
 
 
-    private fun observeScoreEvent() {
-        viewModel.scoringRows.observe(viewLifecycleOwner) {
-            viewModel.score += (it * 10) * (2 * it)
-            val text = "SCORE: ${viewModel.score}"
-            scoreTV.text = text
-        }
-
-    }
-
-    private fun observeEvent() {
-        viewModel.event.observe(viewLifecycleOwner) {
+    private fun observeInstructionsFromViewModel() {
+        viewModel.uiInstruction.observe(viewLifecycleOwner) {
             when (it) {
-                MAKE_TETRIS_SOUND -> CoroutineScope(Main).launch {
+                is GameFragmentViewModel.UiInstruction.MakeTetrisSound -> CoroutineScope(Main).launch {
                     tetrisSound.start()
                     for (index in 0..3) {
                         scoreTV.text = ""
@@ -113,13 +107,21 @@ class GameFragment : Fragment() {
                         scoreTV.text = ""
                     }
                 }
-                MAKE_ROW_SOUND -> CoroutineScope(Main).launch {
+                is GameFragmentViewModel.UiInstruction.MakeRowSound -> CoroutineScope(Main).launch {
                     plingSound.start()
                 }
-                RESTART -> restart()
-                REFRESH_SCREEN -> view?.invalidate()
+                is GameFragmentViewModel.UiInstruction.Restart -> restart()
+
+                is GameFragmentViewModel.UiInstruction.RefreshScreen -> view?.invalidate()
+
+                is GameFragmentViewModel.UiInstruction.Scoring -> {
+                    val rows = it.row
+                    viewModel.score += (rows * 10) * (2 * rows)
+                    val text = "SCORE: ${viewModel.score}"
+                    scoreTV.text = text
+
+                }
             }
         }
-
     }
 }

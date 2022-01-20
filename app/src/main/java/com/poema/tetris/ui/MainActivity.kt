@@ -6,7 +6,7 @@ import android.os.Bundle
 
 import com.poema.tetris.databinding.ActivityMainBinding
 
-const val INCREASE_SPEED_INTERVAL = 15
+
 
 class MainActivity : AppCompatActivity() {
 
