@@ -4,88 +4,93 @@ package com.poema.tetris.ui.fragments
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.poema.tetris.Game
 import com.poema.tetris.GameScreen
-import com.poema.tetris.Position
+import com.poema.tetris.Player
 import kotlinx.coroutines.*
 
 
 class GameFragmentViewModel : ViewModel() {
 
     private var introJob: Job? = null
-    private var position = Position(5, 0)
-    private var newRound = true
     private var job: Job? = null
-    private var currentBlock: Array<Array<Int>> = arrayOf()
-    var score = 0
-    var gameOn = false
-    private var interval = 1000L
-    private var time = 0L
-    private var lapTime = 0L
+    private val player = Player()
+    val game = Game()
 
     sealed class UiInstruction {
         object RefreshScreen : UiInstruction()
         object MakeRowSound : UiInstruction()
-        object MakeTetrisSound: UiInstruction()
-        object Restart: UiInstruction()
-        data class Scoring(val row:Int) : UiInstruction()
+        data class MakeTetrisSound(val score: Int) : UiInstruction()
+        object Restart : UiInstruction()
+        data class ShowScore(val score: Int) : UiInstruction()
     }
 
     private val _uiInstruction: MutableLiveData<UiInstruction> = MutableLiveData<UiInstruction>()
     val uiInstruction: MutableLiveData<UiInstruction> = _uiInstruction
 
 
-    fun onStart(){
+    fun onStart() {
         introJob?.let { introJob!!.cancel() }
-        gameOn = true
-        time = System.currentTimeMillis()
-        lapTime = System.currentTimeMillis() + INCREASE_SPEED_INTERVAL*1000
-        GameScreen.emptyGameBoard()
+        game.gameOn = true
+        game.time = System.currentTimeMillis()
+        game.lapTime = System.currentTimeMillis() + INCREASE_SPEED_INTERVAL * 1000
+        GameScreen.emptyGameScreen()
         pickBlock()
     }
 
     private fun pickBlock() {
-        if (newRound) {
-            removeFullRowsAndDoScoreCount()
+        if (game.newRound) {
+            removeFullRowsAndRearrangeScreen()
             val code = "ILJOZST".random()
-            currentBlock = GameScreen.createBlock(code)
+            player.currentBlock = GameScreen.createBlock(code)
         }
 
-        newRound = false
+        game.newRound = false
         mainFunction()
         pause()
     }
 
-    private fun increaseSpeed() {
-        println("!!! INTERVAL HAS SHORTENED TO $interval!")
-        if (interval > 25) interval -= 25L
-    }
-
     private fun mainFunction() {
-        if (System.currentTimeMillis() > lapTime) {
+        if (System.currentTimeMillis() > game.lapTime) {
             increaseSpeed()
-            lapTime = System.currentTimeMillis() + (INCREASE_SPEED_INTERVAL * 1000)
+            game.lapTime = System.currentTimeMillis() + (INCREASE_SPEED_INTERVAL * 1000)
         }
-        if (position.y == 0 && isCollision()) {
+        if (player.position.y == 0 && isCollision(player)) {
             job?.cancel()
-            onEnd()
+            game.gameOn = false
         }
         removeBlock()
-        position.y++
-        if (isCollision()) {
-            position.y--
-            insertBlock()
-            position.y = 0
-            position.x = 5
-            newRound = true
+        player.position.y++
+        if (isCollision(player)) {
+            player.position.y--
+            insertBlock(player)
+            _uiInstruction.value = UiInstruction.RefreshScreen
+            player.position.y = 0
+            player.position.x = 5
+            game.newRound = true
 
-            pickBlock()
+            if (game.gameOn) pickBlock() else onEnd()
         } else {
-            insertBlock()
+            insertBlock(player)
+            _uiInstruction.value = UiInstruction.RefreshScreen
         }
     }
 
-    private fun removeFullRowsAndDoScoreCount() {
-        var amountOfRows = 0
+    private fun pause() {
+        job?.let { job!!.cancel() }
+        job = viewModelScope.launch {
+            delay(game.interval)
+            if (game.gameOn) pickBlock() else onEnd()
+        }
+    }
+
+    private fun increaseSpeed() {
+        println("!!! INTERVAL HAS SHORTENED TO ${game.interval}!")
+        if (game.interval > 25) game.interval -= 25L
+    }
+    
+    private fun removeFullRowsAndRearrangeScreen() {
+        var amountOfFullRows = 0
         outer@ while (true) {
             for (y in GameScreen.arr.lastIndex downTo 0) {
                 var sum = 0
@@ -94,12 +99,12 @@ class GameFragmentViewModel : ViewModel() {
                 }
                 if (sum == 12) {
                     _uiInstruction.value = UiInstruction.MakeRowSound
-                    amountOfRows++
+                    amountOfFullRows++
                     val new2dArray = Array(20) { Array<Int>(12) { 0 } }
                     for (ind in 1..y) {
                         new2dArray[ind] = GameScreen.arr[ind - 1]
                     }
-                    val newFirstLine = Array<Int>(12) { 0 }
+                    val newFirstLine = Array(12) { 0 }
                     new2dArray[0] = newFirstLine
                     for (ind in y until new2dArray.lastIndex) {
                         new2dArray[ind + 1] = GameScreen.arr[ind + 1]
@@ -110,37 +115,38 @@ class GameFragmentViewModel : ViewModel() {
             }
             break
         }
-        if (amountOfRows == 4) {
-            _uiInstruction.value = UiInstruction.MakeTetrisSound
-        }
-            _uiInstruction.value = UiInstruction.Scoring(amountOfRows)
-
+        doScoring(amountOfFullRows)
     }
 
-    private fun pause() {
-        job?.let { job!!.cancel() }
-        job = viewModelScope.launch {
-            delay(interval)
-            pickBlock()
+    private fun doScoring(rows: Int){
+        if (rows == 4) {
+            calculateScore(rows)
+            _uiInstruction.value = UiInstruction.MakeTetrisSound(player.score)
+        } else {
+            calculateScore(rows)
+            _uiInstruction.value = UiInstruction.ShowScore(player.score)
         }
     }
 
-    fun insertBlock() {
-        currentBlock.forEachIndexed { rowIndex, _ ->
-            currentBlock[rowIndex].forEachIndexed { columnIndex, value ->
+    private fun calculateScore(rows: Int) {
+        player.score += (rows * 10) * (rows * 2)
+    }
+
+    fun insertBlock(player:Player) {
+        player.currentBlock.forEachIndexed { rowIndex, _ ->
+            player.currentBlock[rowIndex].forEachIndexed { columnIndex, value ->
                 if (value != 0) {
-                    GameScreen.arr[rowIndex + position.y][columnIndex + position.x] = value
+                    GameScreen.arr[rowIndex + player.position.y][columnIndex + player.position.x] = value
                 }
             }
         }
-        _uiInstruction.value = UiInstruction.RefreshScreen
     }
 
     fun removeBlock() {
-        for (rowIndex in 0..currentBlock.lastIndex) {
-            for (columnIndex in 0..currentBlock.lastIndex) {
-                if (currentBlock[rowIndex][columnIndex] != 0) {
-                    GameScreen.arr[rowIndex + position.y][columnIndex + position.x] = 0
+        for (rowIndex in 0..player.currentBlock.lastIndex) {
+            for (columnIndex in 0..player.currentBlock.lastIndex) {
+                if (player.currentBlock[rowIndex][columnIndex] != 0) {
+                    GameScreen.arr[rowIndex + player.position.y][columnIndex + player.position.x] = 0
                 }
             }
         }
@@ -148,43 +154,45 @@ class GameFragmentViewModel : ViewModel() {
     }
 
     fun performRotation(dir: Int) {
-        val pos = position.x
+        removeBlock()
+        val pos = player.position.x
         var offset = 1
         rotateBlock(dir)
-        while (isCollision()) {
-            position.x += offset
+        while (isCollision(player)) {
+            player.position.x += offset
             offset = -(offset + if (offset > 0) 1 else -1)
-            if (offset > currentBlock[0].size) {
+            if (offset > player.currentBlock[0].size) {
                 rotateBlock(-dir)
-                position.x = pos
+                player.position.x = pos
                 return
             }
         }
-        insertBlock()
+        insertBlock(player)
+        _uiInstruction.value = UiInstruction.RefreshScreen
     }
 
     private fun rotateBlock(dir: Int) {
-        val n = currentBlock.size
+        val n = player.currentBlock.size
         val turnedBlock = Array(n) { Array(n) { 0 } }
-        for (i in 0 until n) {
-            for (j in 0 until n) {
+        for (y in player.currentBlock.indices) {
+            for (x in player.currentBlock.indices) {
                 if (dir < 0) {
-                    turnedBlock[i][j] = currentBlock[n - 1 - j][i]
+                    turnedBlock[y][x] = player.currentBlock[(n - 1 - x)][y]
                 } else {
-                    turnedBlock[i][j] = currentBlock[j][n - i - 1]
+                    turnedBlock[y][x] = player.currentBlock[x][n - y - 1]
                 }
             }
         }
-        currentBlock = turnedBlock
+        player.currentBlock = turnedBlock
     }
 
-    private fun isCollision(): Boolean {
-        for (y in currentBlock.indices) {
-            for (x in currentBlock[y].indices) {
-                if (currentBlock[y][x] != 0) {
-                    if ((position.y + y) in 0..19) {
-                        if ((position.x + x) in 0..11) {
-                            if (GameScreen.arr[y + position.y][x + position.x] != 0) {
+    fun isCollision(player:Player): Boolean {
+        for (y in player.currentBlock.indices) {
+            for (x in player.currentBlock[y].indices) {
+                if (player.currentBlock[y][x] != 0) {
+                    if ((player.position.y + y) in 0..19) {
+                        if ((player.position.x + x) in 0..11) {
+                            if (GameScreen.arr[y + player.position.y][x + player.position.x] != 0) {
                                 return true
                             }
                         } else {
@@ -199,36 +207,40 @@ class GameFragmentViewModel : ViewModel() {
         return false
     }
 
-    fun movePlayerToTheSides(dir: Int) {
+    fun moveBlockToTheSides(dir: Int) {
         removeBlock()
-        position.x += dir
-        if (!isCollision()) {
-            insertBlock()
+        player.position.x += dir
+        if (!isCollision(player)) {
+            insertBlock(player)
+            _uiInstruction.value = UiInstruction.RefreshScreen
         } else {
-            position.x -= dir
-            insertBlock()
+            player.position.x -= dir
+            insertBlock(player)
+            _uiInstruction.value = UiInstruction.RefreshScreen
         }
     }
 
-    fun movePlayerDown() {
+    fun moveBlockDown() {
         removeBlock()
-        position.y++
-        if (!isCollision()) {
-            insertBlock()
+        player.position.y++
+        if (!isCollision(player)) {
+            insertBlock(player)
+            _uiInstruction.value = UiInstruction.RefreshScreen
         } else {
-            position.y--
-            insertBlock()
+            player.position.y--
+            insertBlock(player)
+            _uiInstruction.value = UiInstruction.RefreshScreen
         }
     }
 
-    fun introBoard() {
+    fun showIntroText() {
         var pos = 0
-        introJob = CoroutineScope(Dispatchers.Main).launch {
+        introJob = viewModelScope.launch {
             while (true) {
                 for (indexY in 0..4) {
                     for (indexX in (0 + pos)..(11 + pos)) {
                         GameScreen.arr[indexY + 7][indexX - pos] =
-                            GameScreen.introBlock[indexY][indexX]
+                            GameScreen.introText[indexY][indexX]
                     }
                     if (pos > 33) {
                         pos = 0
@@ -242,9 +254,8 @@ class GameFragmentViewModel : ViewModel() {
     }
 
     private fun onEnd() {
-        GameScreen.emptyGameBoard()
         job?.cancel()
-        _uiInstruction.value= UiInstruction.Restart
+        _uiInstruction.value = UiInstruction.Restart
     }
 
 }

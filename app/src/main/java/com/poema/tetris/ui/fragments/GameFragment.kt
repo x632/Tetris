@@ -25,8 +25,8 @@ class GameFragment : Fragment() {
 
     private lateinit var gameView: DynamicView
     private lateinit var scoreTV: TextView
-    private lateinit var plingSound: MediaPlayer
-    lateinit var tetrisSound: MediaPlayer
+    private lateinit var rowSound: MediaPlayer
+    private lateinit var tetrisSound: MediaPlayer
     private lateinit var startDownBtn: Button
 
 
@@ -35,7 +35,7 @@ class GameFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         tetrisSound = MediaPlayer.create(activity, R.raw.tetris)
-        plingSound = MediaPlayer.create(activity, R.raw.pling)
+        rowSound = MediaPlayer.create(activity, R.raw.pling)
         val displayMetrics: DisplayMetrics = this.resources.displayMetrics
         val w =
             displayMetrics.widthPixels
@@ -52,21 +52,21 @@ class GameFragment : Fragment() {
 
         startDownBtn = requireActivity().findViewById(goDown)
         startDownBtn.text = getString(R.string.start)
-        viewModel.introBoard()
+        viewModel.showIntroText()
 
         startDownBtn.setOnClickListener {
             startDownBtn.text = getString(R.string.down)
             startDownBtn.setTextColor(Color.WHITE)
-            if (viewModel.gameOn) viewModel.movePlayerDown()
+            if (viewModel.game.gameOn) viewModel.moveBlockDown()
             else {
                 viewModel.onStart()
             }
         }
         goLeft.setOnClickListener {
-            viewModel.movePlayerToTheSides(-1)
+            viewModel.moveBlockToTheSides(-1)
         }
         goRight.setOnClickListener {
-            viewModel.movePlayerToTheSides(1)
+            viewModel.moveBlockToTheSides(1)
         }
         rotateRight.setOnClickListener {
             viewModel.removeBlock()
@@ -75,7 +75,6 @@ class GameFragment : Fragment() {
         rotateLeft.setOnClickListener {
             viewModel.removeBlock()
             viewModel.performRotation(1)
-            viewModel.insertBlock()
         }
 
         observeInstructionsFromViewModel()
@@ -94,34 +93,35 @@ class GameFragment : Fragment() {
 
 
     private fun observeInstructionsFromViewModel() {
-        viewModel.uiInstruction.observe(viewLifecycleOwner) {
-            when (it) {
+        viewModel.uiInstruction.observe(viewLifecycleOwner) { instruction ->
+            when (instruction) {
                 is GameFragmentViewModel.UiInstruction.MakeTetrisSound -> CoroutineScope(Main).launch {
                     tetrisSound.start()
                     for (index in 0..3) {
                         scoreTV.text = ""
-
                         delay(200)
                         scoreTV.text = getString(R.string.tetris)
                         delay(300)
                         scoreTV.text = ""
+                        showScore(instruction.score)
                     }
                 }
                 is GameFragmentViewModel.UiInstruction.MakeRowSound -> CoroutineScope(Main).launch {
-                    plingSound.start()
+                    rowSound.start()
                 }
                 is GameFragmentViewModel.UiInstruction.Restart -> restart()
 
                 is GameFragmentViewModel.UiInstruction.RefreshScreen -> view?.invalidate()
 
-                is GameFragmentViewModel.UiInstruction.Scoring -> {
-                    val rows = it.row
-                    viewModel.score += (rows * 10) * (2 * rows)
-                    val text = "SCORE: ${viewModel.score}"
-                    scoreTV.text = text
-
+                is GameFragmentViewModel.UiInstruction.ShowScore -> {
+                    showScore(instruction.score)
                 }
             }
         }
+    }
+
+    private fun showScore(score: Int){
+        val text = "SCORE: $score"
+        scoreTV.text = text
     }
 }

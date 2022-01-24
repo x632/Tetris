@@ -2,22 +2,14 @@ package com.poema.tetris
 
 
 object GameScreen {
-    var arr = Array(20) { Array<Int>(12) { 0 } }
+    var arr = Array(20) { Array(12) { 0 } }
 
-    fun printArray() {
-        for (array in arr) {
-            println("!!! ${array.contentToString()}")
-        }
-        println("!!!________________________________")
-    }
-
-    fun emptyGameBoard() {
+    fun emptyGameScreen() {
         for (y in arr.indices) {
             for (x in arr[y].indices) {
                 arr[y][x] = 0
             }
         }
-
     }
 
     fun createBlock(type: Char): Array<Array<Int>> {
@@ -78,7 +70,7 @@ object GameScreen {
         }
     }
 
-    var introBlock = arrayOf(
+    var introText = arrayOf(
         arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 0, 1, 2, 3, 0, 6, 5, 4, 0, 3, 4, 0, 0, 3, 0, 6, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
         arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 4, 0, 6, 0, 4, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
         arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 1, 0, 0, 0, 2, 0, 0, 5, 3, 0, 0, 5, 0, 4, 3, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),

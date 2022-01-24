@@ -7,7 +7,6 @@ import android.os.Bundle
 import com.poema.tetris.databinding.ActivityMainBinding
 
 
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding

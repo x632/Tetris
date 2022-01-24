@@ -7,14 +7,12 @@ import android.view.View
 import com.poema.tetris.GameScreen
 
 
-
-
 class DynamicView(context: Context?, w: Int, h: Int) :
     View(context) {
 
     private var bitmap: Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
     private var frameDrawer: Canvas = Canvas(bitmap)
-    private var bounds: Rect = Rect(24, 0, w-24, h)
+    private var bounds: Rect = Rect(24, 0, w - 24, h)
     private var paint: Paint = Paint()
 
 
@@ -26,13 +24,13 @@ class DynamicView(context: Context?, w: Int, h: Int) :
             for (x in 0..11) {
                 if (GameScreen.arr[y][x] != 0) {
                     paint.color = when (GameScreen.arr[y][x]) {
-                        1 -> rgb(255,51,51) //red
-                        2 -> rgb(255,153,51) //orange
-                        3 -> rgb(255,255,51) //yellow
-                        4 -> rgb(153,255,51) //lightgreen
-                        5 -> rgb(51,153,255)  //magenta
-                        6 -> rgb(153,51,255) //purple
-                        7 -> rgb(255,51,255) //pink
+                        1 -> rgb(255, 51, 51) //red
+                        2 -> rgb(255, 153, 51) //orange
+                        3 -> rgb(255, 255, 51) //yellow
+                        4 -> rgb(153, 255, 51) //lightgreen
+                        5 -> rgb(51, 153, 255)  //magenta
+                        6 -> rgb(153, 51, 255) //purple
+                        7 -> rgb(255, 51, 255) //pink
                         else -> {
                             0
                         }
