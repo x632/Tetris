@@ -8,6 +8,7 @@ import android.util.DisplayMetrics
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.poema.tetris.*
@@ -15,7 +16,7 @@ import com.poema.tetris.R.id.goDown
 import com.poema.tetris.ui.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
-
+import com.poema.tetris.Game
 
 const val INCREASE_SPEED_INTERVAL = 15
 
@@ -28,6 +29,7 @@ class GameFragment : Fragment() {
     private lateinit var rowSound: MediaPlayer
     private lateinit var tetrisSound: MediaPlayer
     private lateinit var startDownBtn: Button
+    private lateinit var highScoreTV: TextView
 
 
     override fun onCreateView(
@@ -49,15 +51,22 @@ class GameFragment : Fragment() {
         val goLeft: View = requireActivity().findViewById(R.id.goLeft)
         val rotateLeft: View = requireActivity().findViewById(R.id.rotateLeft)
         val rotateRight: View = requireActivity().findViewById(R.id.rotateRight)
+        highScoreTV = requireActivity().findViewById(R.id.highScore)
 
         startDownBtn = requireActivity().findViewById(goDown)
         startDownBtn.text = getString(R.string.start)
         viewModel.showIntroText()
 
+        val prefs = activity!!.getSharedPreferences("HighScore", AppCompatActivity.MODE_PRIVATE)
+        val hsC = prefs!!.getInt("HighestScore", 0)
+        val text = "HIGHSCORE: $hsC"
+        highScoreTV.text = text
+
+
         startDownBtn.setOnClickListener {
             startDownBtn.text = getString(R.string.down)
             startDownBtn.setTextColor(Color.WHITE)
-            if (viewModel.game.gameOn) viewModel.moveBlockDown()
+            if (Game.gameOn) viewModel.moveBlockDown()
             else {
                 viewModel.onStart()
             }
@@ -109,7 +118,20 @@ class GameFragment : Fragment() {
                 is GameFragmentViewModel.UiInstruction.MakeRowSound -> CoroutineScope(Main).launch {
                     rowSound.start()
                 }
-                is GameFragmentViewModel.UiInstruction.Restart -> restart()
+                is GameFragmentViewModel.UiInstruction.Restart -> {
+                    val prefs = activity?.getSharedPreferences("HighScore",AppCompatActivity.MODE_PRIVATE)
+                    val hs = prefs!!.getInt("HighestScore", 0)
+                    println("!!! tidigare highscore: $hs")
+
+                    if (hs < instruction.score) {
+                        println("!!! Poängen: ${instruction.score}")
+                        val editor = prefs!!.edit()
+                        editor!!.putInt("HighestScore", instruction.score)
+                        editor.commit()
+                    }
+
+                    restart()
+                }
 
                 is GameFragmentViewModel.UiInstruction.RefreshScreen -> view?.invalidate()
 
@@ -120,7 +142,7 @@ class GameFragment : Fragment() {
         }
     }
 
-    private fun showScore(score: Int){
+    private fun showScore(score: Int) {
         val text = "SCORE: $score"
         scoreTV.text = text
     }

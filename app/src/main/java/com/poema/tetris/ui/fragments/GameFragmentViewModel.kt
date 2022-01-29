@@ -1,6 +1,7 @@
 package com.poema.tetris.ui.fragments
 
 
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,13 +16,14 @@ class GameFragmentViewModel : ViewModel() {
     private var introJob: Job? = null
     private var job: Job? = null
     private val player = Player()
-    val game = Game()
+
+
 
     sealed class UiInstruction {
         object RefreshScreen : UiInstruction()
         object MakeRowSound : UiInstruction()
         data class MakeTetrisSound(val score: Int) : UiInstruction()
-        object Restart : UiInstruction()
+        data class Restart (var score: Int): UiInstruction()
         data class ShowScore(val score: Int) : UiInstruction()
     }
 
@@ -31,33 +33,35 @@ class GameFragmentViewModel : ViewModel() {
 
     fun onStart() {
         introJob?.let { introJob!!.cancel() }
-        game.gameOn = true
-        game.time = System.currentTimeMillis()
-        game.lapTime = System.currentTimeMillis() + INCREASE_SPEED_INTERVAL * 1000
+        Game.gameOn = true
+        Game.time = System.currentTimeMillis()
+        Game.lapTime = System.currentTimeMillis() + INCREASE_SPEED_INTERVAL * 1000
         GameScreen.emptyGameScreen()
         pickBlock()
     }
 
-    private fun pickBlock() {
-        if (game.newRound) {
-            removeFullRowsAndRearrangeScreen()
+    private fun pickBlock() {  //main loop
+        if (Game.newRound) {
+            val rows = removeFullRowsAndRearrangeScreen()
+            doScoring(rows)
             val code = "ILJOZST".random()
             player.currentBlock = GameScreen.createBlock(code)
         }
 
-        game.newRound = false
+        Game.newRound = false
         mainFunction()
         pause()
     }
 
-    private fun mainFunction() {
-        if (System.currentTimeMillis() > game.lapTime) {
+
+    private fun mainFunction() {   //main loop
+        if (System.currentTimeMillis() > Game.lapTime) {
             increaseSpeed()
-            game.lapTime = System.currentTimeMillis() + (INCREASE_SPEED_INTERVAL * 1000)
+            Game.lapTime = System.currentTimeMillis() + (INCREASE_SPEED_INTERVAL * 1000)
         }
         if (player.position.y == 0 && isCollision(player)) {
             job?.cancel()
-            game.gameOn = false
+            Game.gameOn = false
         }
         removeBlock()
         player.position.y++
@@ -67,29 +71,28 @@ class GameFragmentViewModel : ViewModel() {
             _uiInstruction.value = UiInstruction.RefreshScreen
             player.position.y = 0
             player.position.x = 5
-            game.newRound = true
+            Game.newRound = true
 
-            if (game.gameOn) pickBlock() else onEnd()
+            if (Game.gameOn) pickBlock() else onEnd()
         } else {
             insertBlock(player)
             _uiInstruction.value = UiInstruction.RefreshScreen
         }
     }
 
-    private fun pause() {
+    private fun pause() {     //main loop
         job?.let { job!!.cancel() }
         job = viewModelScope.launch {
-            delay(game.interval)
-            if (game.gameOn) pickBlock() else onEnd()
+            delay(Game.interval)
+            if (Game.gameOn) pickBlock() else onEnd()
         }
     }
 
     private fun increaseSpeed() {
-        println("!!! INTERVAL HAS SHORTENED TO ${game.interval}!")
-        if (game.interval > 25) game.interval -= 25L
+        if (Game.interval > 25) Game.interval -= 25L
     }
-    
-    private fun removeFullRowsAndRearrangeScreen() {
+
+    private fun removeFullRowsAndRearrangeScreen(): Int {
         var amountOfFullRows = 0
         outer@ while (true) {
             for (y in GameScreen.arr.lastIndex downTo 0) {
@@ -115,10 +118,10 @@ class GameFragmentViewModel : ViewModel() {
             }
             break
         }
-        doScoring(amountOfFullRows)
+        return amountOfFullRows
     }
 
-    private fun doScoring(rows: Int){
+    private fun doScoring(rows: Int) {
         if (rows == 4) {
             calculateScore(rows)
             _uiInstruction.value = UiInstruction.MakeTetrisSound(player.score)
@@ -132,11 +135,12 @@ class GameFragmentViewModel : ViewModel() {
         player.score += (rows * 10) * (rows * 2)
     }
 
-    fun insertBlock(player:Player) {
+    fun insertBlock(player: Player) {
         player.currentBlock.forEachIndexed { rowIndex, _ ->
             player.currentBlock[rowIndex].forEachIndexed { columnIndex, value ->
                 if (value != 0) {
-                    GameScreen.arr[rowIndex + player.position.y][columnIndex + player.position.x] = value
+                    GameScreen.arr[rowIndex + player.position.y][columnIndex + player.position.x] =
+                        value
                 }
             }
         }
@@ -146,7 +150,8 @@ class GameFragmentViewModel : ViewModel() {
         for (rowIndex in 0..player.currentBlock.lastIndex) {
             for (columnIndex in 0..player.currentBlock.lastIndex) {
                 if (player.currentBlock[rowIndex][columnIndex] != 0) {
-                    GameScreen.arr[rowIndex + player.position.y][columnIndex + player.position.x] = 0
+                    GameScreen.arr[rowIndex + player.position.y][columnIndex + player.position.x] =
+                        0
                 }
             }
         }
@@ -186,7 +191,7 @@ class GameFragmentViewModel : ViewModel() {
         player.currentBlock = turnedBlock
     }
 
-    fun isCollision(player:Player): Boolean {
+    fun isCollision(player: Player): Boolean {
         for (y in player.currentBlock.indices) {
             for (x in player.currentBlock[y].indices) {
                 if (player.currentBlock[y][x] != 0) {
@@ -255,7 +260,7 @@ class GameFragmentViewModel : ViewModel() {
 
     private fun onEnd() {
         job?.cancel()
-        _uiInstruction.value = UiInstruction.Restart
+        _uiInstruction.value = UiInstruction.Restart(player.score)
     }
 
 }

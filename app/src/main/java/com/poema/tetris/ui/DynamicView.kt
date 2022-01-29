@@ -31,6 +31,7 @@ class DynamicView(context: Context?, w: Int, h: Int) :
                         5 -> rgb(51, 153, 255)  //magenta
                         6 -> rgb(153, 51, 255) //purple
                         7 -> rgb(255, 51, 255) //pink
+                        8 -> rgb(255,255,255) //white
                         else -> {
                             0
                         }

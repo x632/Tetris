@@ -26,7 +26,7 @@ class GameFragmentViewModelTest {
     }
 
     @Test
-    fun test_if_isCollision_returns_true_when_x_is_out_of_range() {
+    fun `test if isCollision returns true when x is out of range`() {
         GameScreen.emptyGameScreen()
         player.position.x = -3
         val result = viewModel.isCollision(player)
@@ -34,7 +34,7 @@ class GameFragmentViewModelTest {
     }
 
     @Test
-    fun test_if_isCollision_returns_true_when_y_is_out_of_range() {
+    fun `test if isCollision returns true when y is out of range`() {
         GameScreen.emptyGameScreen()
         player.position.y = 21
         val result = viewModel.isCollision(player)
@@ -42,7 +42,7 @@ class GameFragmentViewModelTest {
     }
 
     @Test
-    fun test_if_isCollision_returns_true_when_running_into_object() {
+    fun `test if isCollision returns true when running into object`() {
         player.position.x = -2
         player.position.y = 1 //is trying to move one step down from 0 position
         GameScreen.emptyGameScreen()
@@ -73,18 +73,17 @@ class GameFragmentViewModelTest {
     }
 
     @Test
-    fun test_if_insert_block_inserts_block_on_screen_at_correct_coordinate() {
-        player.position.x = -2
+    fun `test if insert block inserts block on screen at correct coordinate`() {
+        player.position.x = 4
         player.position.y = 0
         GameScreen.emptyGameScreen()
         viewModel.insertBlock(player)
-        println("!!!${GameScreen.arr.contentDeepToString()}")
         val result = GameScreen.arr.contentDeepEquals(
             arrayOf(
-                arrayOf(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-                arrayOf(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-                arrayOf(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-                arrayOf(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                arrayOf(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+                arrayOf(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+                arrayOf(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+                arrayOf(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
                 arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
                 arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
                 arrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
