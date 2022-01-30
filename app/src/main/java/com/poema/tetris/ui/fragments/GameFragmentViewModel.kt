@@ -1,7 +1,6 @@
 package com.poema.tetris.ui.fragments
 
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,12 +17,11 @@ class GameFragmentViewModel : ViewModel() {
     private val player = Player()
 
 
-
     sealed class UiInstruction {
         object RefreshScreen : UiInstruction()
         object MakeRowSound : UiInstruction()
         data class MakeTetrisSound(val score: Int) : UiInstruction()
-        data class Restart (var score: Int): UiInstruction()
+        data class Restart(var score: Int) : UiInstruction()
         data class ShowScore(val score: Int) : UiInstruction()
     }
 
@@ -44,6 +42,7 @@ class GameFragmentViewModel : ViewModel() {
         if (Game.newRound) {
             val rows = removeFullRowsAndRearrangeScreen()
             doScoring(rows)
+            checkAndMoveLevitatingBlocks()
             val code = "ILJOZST".random()
             player.currentBlock = GameScreen.createBlock(code)
         }
@@ -51,6 +50,17 @@ class GameFragmentViewModel : ViewModel() {
         Game.newRound = false
         mainFunction()
         pause()
+    }
+
+    fun checkAndMoveLevitatingBlocks() {
+        viewModelScope.launch {
+            while (checkIfLevitatingBlock()) {
+                uiInstruction.value = UiInstruction.RefreshScreen
+                delay(200)
+                checkIfLevitatingBlock()
+            }
+        }
+
     }
 
 
@@ -86,6 +96,52 @@ class GameFragmentViewModel : ViewModel() {
             delay(Game.interval)
             if (Game.gameOn) pickBlock() else onEnd()
         }
+    }
+
+    fun checkIfLevitatingBlock(): Boolean {
+        for (y in GameScreen.arr.indices) {
+            for (x in GameScreen.arr[y].indices) {
+                for (number in 1..7) {
+                    if (y in 1..18 && x in 1..10) {
+                        if (GameScreen.arr[y][x] == number
+                            && GameScreen.arr[y - 1][x] != number
+                            && GameScreen.arr[y][x + 1] != number
+                            && GameScreen.arr[y][x - 1] != number
+                            && GameScreen.arr[y + 1][x] == 0
+                        ) {
+                            GameScreen.arr[y][x] = 0
+                            GameScreen.arr[y + 1][x] = number
+                            return true
+                        }
+                    } else {
+                        if (y in 1..18) {
+                            if (x == 0) {
+                                if (GameScreen.arr[y][x] == number
+                                    && GameScreen.arr[y - 1][x] != number
+                                    && GameScreen.arr[y][x + 1] != number
+                                    && GameScreen.arr[y + 1][x] == 0
+                                ) {
+                                    GameScreen.arr[y][x] = 0
+                                    GameScreen.arr[y + 1][x] = number
+                                    return true
+                                }
+                            } else {
+                                if (GameScreen.arr[y][x] == number
+                                    && GameScreen.arr[y - 1][x] != number
+                                    && GameScreen.arr[y][x - 1] != number
+                                    && GameScreen.arr[y + 1][x] == 0
+                                ) {
+                                    GameScreen.arr[y][x] = 0
+                                    GameScreen.arr[y + 1][x] = number
+                                    return true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false
     }
 
     private fun increaseSpeed() {
