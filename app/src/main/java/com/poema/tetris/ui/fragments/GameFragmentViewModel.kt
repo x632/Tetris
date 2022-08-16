@@ -159,7 +159,7 @@ class GameFragmentViewModel : ViewModel() {
                 if (sum == 12) {
                     _uiInstruction.value = UiInstruction.MakeRowSound
                     amountOfFullRows++
-                    val new2dArray = Array(20) { Array<Int>(12) { 0 } }
+                    val new2dArray = Array(20) { Array(12) { 0 } }
                     for (ind in 1..y) {
                         new2dArray[ind] = GameScreen.arr[ind - 1]
                     }

@@ -121,7 +121,7 @@ class GameFragment : Fragment() {
                 }
                 is GameFragmentViewModel.UiInstruction.Restart -> {
 
-                        val sharedPref = activity?.getPreferences(AppCompatActivity.MODE_PRIVATE)
+                        val sharedPref = requireActivity().getPreferences(AppCompatActivity.MODE_PRIVATE)
                         val hs = sharedPref!!.getInt("HighestScore", 0)
                         println("!!! har poängen kommit med? ..:${instruction.score}")
                         if (hs < instruction.score) {
