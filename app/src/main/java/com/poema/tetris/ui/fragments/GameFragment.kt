@@ -57,8 +57,8 @@ class GameFragment : Fragment() {
         startDownBtn.text = getString(R.string.start)
         viewModel.showIntroText()
 
-        val prefs = requireActivity().getSharedPreferences("Prefs", AppCompatActivity.MODE_PRIVATE)
-        val hsC = prefs!!.getInt("HighestScore", 0)
+        val sharedPref = requireActivity().getPreferences(AppCompatActivity.MODE_PRIVATE)
+        val hsC = sharedPref!!.getInt("HighestScore", 0)
         val text = "HIGHSCORE: $hsC"
         highScoreTV.text = text
         println("!!! highest score: $hsC")
@@ -120,15 +120,16 @@ class GameFragment : Fragment() {
                     rowSound.start()
                 }
                 is GameFragmentViewModel.UiInstruction.Restart -> {
-                    val prefs = activity?.getSharedPreferences("Prefs",AppCompatActivity.MODE_PRIVATE)
-                    val hs = prefs!!.getInt("HighestScore", 0)
-                    val number : Int = instruction.score
-                    if (hs < number) {
-                        val editor = prefs.edit()
-                        editor!!.putInt("HighestScore", number)
-                        editor.apply()
-                    }
-                    restart()
+
+                        val sharedPref = activity?.getPreferences(AppCompatActivity.MODE_PRIVATE)
+                        val hs = sharedPref!!.getInt("HighestScore", 0)
+                        println("!!! har poängen kommit med? ..:${instruction.score}")
+                        if (hs < instruction.score) {
+                            val editor = sharedPref.edit()
+                            editor!!.putInt("HighestScore", instruction.score)
+                            editor.commit()
+                        }
+                        restart()
                 }
 
                 is GameFragmentViewModel.UiInstruction.RefreshScreen -> view?.invalidate()
