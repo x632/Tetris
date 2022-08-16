@@ -57,10 +57,11 @@ class GameFragment : Fragment() {
         startDownBtn.text = getString(R.string.start)
         viewModel.showIntroText()
 
-        val prefs = activity!!.getSharedPreferences("Prefs", AppCompatActivity.MODE_PRIVATE)
+        val prefs = requireActivity().getSharedPreferences("Prefs", AppCompatActivity.MODE_PRIVATE)
         val hsC = prefs!!.getInt("HighestScore", 0)
         val text = "HIGHSCORE: $hsC"
         highScoreTV.text = text
+        println("!!! highest score: $hsC")
 
 
         startDownBtn.setOnClickListener {
@@ -122,14 +123,14 @@ class GameFragment : Fragment() {
                     val prefs = activity?.getSharedPreferences("Prefs",AppCompatActivity.MODE_PRIVATE)
                     val hs = prefs!!.getInt("HighestScore", 0)
                     println("!!! tidigare highscore: $hs")
-
-                    if (hs < instruction.score) {
-                        println("!!! Poängen: ${instruction.score}")
-                        val editor = prefs!!.edit()
-                        editor!!.putInt("HighestScore", instruction.score)
-                        editor.commit()
+                    println("!!!nuvarande score: ${instruction.score}")
+                    val number : Int = instruction.score
+                    if (hs < number) {
+                        println("!!! Poängen: ${number}")
+                        val editor = prefs.edit()
+                        editor!!.putInt("HighestScore", number)
+                        editor.apply()
                     }
-
                     restart()
                 }
 
