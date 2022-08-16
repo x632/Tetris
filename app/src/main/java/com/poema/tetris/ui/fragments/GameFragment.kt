@@ -122,11 +122,8 @@ class GameFragment : Fragment() {
                 is GameFragmentViewModel.UiInstruction.Restart -> {
                     val prefs = activity?.getSharedPreferences("Prefs",AppCompatActivity.MODE_PRIVATE)
                     val hs = prefs!!.getInt("HighestScore", 0)
-                    println("!!! tidigare highscore: $hs")
-                    println("!!!nuvarande score: ${instruction.score}")
                     val number : Int = instruction.score
                     if (hs < number) {
-                        println("!!! Poängen: ${number}")
                         val editor = prefs.edit()
                         editor!!.putInt("HighestScore", number)
                         editor.apply()
